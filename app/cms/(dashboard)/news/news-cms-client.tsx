@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CalendarDays, FileText, ImageIcon, Newspaper, User } from "lucide-react";
+import { CalendarDays, FileText, Newspaper, User } from "lucide-react";
 import { cmsCredentials, CMS_UNAUTHORIZED_MESSAGE } from "@/lib/cms-fetch";
 import { CmsButton, CmsCard, CmsFieldLabel, CmsInput } from "@/components/cms/cms-ui";
 import { CmsImageUpload } from "@/components/cms/cms-image-upload";
@@ -9,6 +9,8 @@ import { CmsListActions } from "@/components/cms/cms-list-actions";
 import { CmsPageHero, CmsSectionHeading } from "@/components/cms/cms-page-chrome";
 import { CmsRichTextEditor } from "@/components/cms/cms-rich-text-editor";
 import { handleCmsResponse } from "@/lib/cms-toast";
+import { CmsDataTable } from "@/components/cms/cms-data-table";
+import type { ColumnDef, ColumnSizingState } from "@tanstack/react-table";
 
 type Row = {
   id: string;
@@ -89,6 +91,7 @@ export function NewsCmsClient() {
   const [err, setErr] = useState<string | null>(null);
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
 
   const load = useCallback(async () => {
     setErr(null);
@@ -170,6 +173,157 @@ export function NewsCmsClient() {
       await load();
     }
   }
+
+  async function patchRow(id: string, patch: Partial<Pick<Row, "published" | "sortOrder">>) {
+    setErr(null);
+    const res = await fetch(`/api/cms/news-items/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      ...cmsCredentials,
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) {
+      setErr(res.status === 401 ? CMS_UNAUTHORIZED_MESSAGE : await res.text());
+      return false;
+    }
+    return true;
+  }
+
+  async function reorder(next: Row[]) {
+    const normalized = next.map((r, i) => ({ ...r, sortOrder: i }));
+    const changed = normalized.filter((r) => rows.find((x) => x.id === r.id)?.sortOrder !== r.sortOrder);
+    setRows(normalized);
+    if (changed.length === 0) return;
+
+    const results = await Promise.all(changed.map((r) => patchRow(r.id, { sortOrder: r.sortOrder })));
+    if (results.every(Boolean)) {
+      await load();
+    }
+  }
+
+  const columns: ColumnDef<Row>[] = [
+    {
+      id: "__drag",
+      header: "",
+      cell: () => null,
+      size: 56,
+      enableResizing: false,
+    },
+    {
+      accessorKey: "sortOrder",
+      header: "Order",
+      size: 90,
+      cell: ({ row, getValue }) => (
+        <CmsInput
+          type="number"
+          className="w-24"
+          defaultValue={Number(getValue())}
+          onBlur={async (e) => {
+            const v = Number(e.target.value);
+            if (!Number.isFinite(v)) return;
+            const ok = await patchRow(row.original.id, { sortOrder: v });
+            if (ok) {
+              setRows((prev) => prev.map((x) => (x.id === row.original.id ? { ...x, sortOrder: v } : x)));
+              await load();
+            }
+          }}
+        />
+      ),
+    },
+    {
+      accessorKey: "published",
+      header: "Published",
+      size: 120,
+      cell: ({ row }) => (
+        <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={row.original.published}
+            onChange={async (e) => {
+              const next = e.target.checked;
+              setRows((prev) => prev.map((x) => (x.id === row.original.id ? { ...x, published: next } : x)));
+              const ok = await patchRow(row.original.id, { published: next });
+              if (!ok) await load();
+            }}
+          />
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {row.original.published ? "Yes" : "No"}
+          </span>
+        </label>
+      ),
+    },
+    {
+      accessorKey: "title",
+      header: "Headline",
+      size: 360,
+      cell: ({ row, getValue }) => (
+        <button
+          type="button"
+          className="text-left font-semibold text-slate-900 hover:underline"
+          onClick={() => startEdit(row.original)}
+        >
+          {String(getValue())}
+        </button>
+      ),
+    },
+    {
+      accessorKey: "slug",
+      header: "Slug",
+      size: 240,
+      cell: ({ getValue }) => <span className="break-all text-xs text-slate-500">{String(getValue())}</span>,
+    },
+    {
+      accessorKey: "date",
+      header: "Date",
+      size: 150,
+      cell: ({ getValue }) => <span className="text-sm text-slate-700">{fmtListDate(String(getValue()))}</span>,
+    },
+    {
+      id: "author",
+      header: "Author",
+      size: 200,
+      cell: ({ row }) => (
+        <div className="space-y-0.5">
+          <p className="text-sm text-slate-700">{row.original.authorName ?? "—"}</p>
+          <p className="text-xs text-slate-500">{row.original.authorRole ?? ""}</p>
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      size: 200,
+      cell: ({ row }) => (
+        <CmsListActions
+          onEdit={() => startEdit(row.original)}
+          onDelete={() => remove(row.original.id)}
+          confirm={{
+            title: "Delete this news article?",
+            description: (
+              <>
+                The article{" "}
+                <span className="font-semibold text-slate-900">&ldquo;{row.original.title}&rdquo;</span> ({row.original.slug})
+                will be removed from the public news feed immediately.
+              </>
+            ),
+            highlights: (
+              <ul className="space-y-1.5">
+                <li className="flex items-start gap-2">
+                  <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                  <span>This action cannot be undone.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                  <span>Any external links pointing to this article will break.</span>
+                </li>
+              </ul>
+            ),
+            confirmLabel: "Delete article",
+          }}
+        />
+      ),
+    },
+  ];
 
   if (loading) return <p className="text-sm text-slate-500">Loading…</p>;
 
@@ -315,72 +469,16 @@ export function NewsCmsClient() {
           description="Edit or remove items. Drafts stay hidden until published."
           icon={FileText}
         />
-        <ul className="space-y-3">
-          {rows.map((r) => (
-            <li key={r.id}>
-              <CmsCard className="flex flex-col justify-between gap-4 p-5 md:flex-row md:items-center">
-                <div className="flex min-w-0 gap-4">
-                  {r.imageUrl ? (
-                    <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={r.imageUrl} alt="" className="h-full w-full object-cover" />
-                    </div>
-                  ) : (
-                    <span className="flex h-14 w-20 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-400">
-                      <ImageIcon className="h-5 w-5" aria-hidden />
-                    </span>
-                  )}
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-slate-900">{r.title}</p>
-                    <p className="break-all text-xs text-slate-500">
-                      <span className="font-medium text-slate-600">Address name: </span>
-                      {r.slug}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {fmtListDate(r.date)}
-                      {r.authorName ? ` · ${r.authorName}` : ""}
-                      {" · "}
-                      {r.published ? "Published" : "Draft"}
-                    </p>
-                  </div>
-                </div>
-                <CmsListActions
-                  onEdit={() => startEdit(r)}
-                  onDelete={() => remove(r.id)}
-                  confirm={{
-                    title: "Delete this news article?",
-                    description: (
-                      <>
-                        The article{" "}
-                        <span className="font-semibold text-slate-900">&ldquo;{r.title}&rdquo;</span> ({r.slug})
-                        will be removed from the public news feed immediately.
-                      </>
-                    ),
-                    highlights: (
-                      <ul className="space-y-1.5">
-                        <li className="flex items-start gap-2">
-                          <span
-                            aria-hidden
-                            className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-red-500"
-                          />
-                          <span>This action cannot be undone.</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span
-                            aria-hidden
-                            className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-red-500"
-                          />
-                          <span>Any external links pointing to this article will break.</span>
-                        </li>
-                      </ul>
-                    ),
-                    confirmLabel: "Delete article",
-                  }}
-                />
-              </CmsCard>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-6">
+          <CmsDataTable
+            rows={rows}
+            columns={columns}
+            onReorder={reorder}
+            emptyLabel="No articles yet."
+            columnSizing={columnSizing}
+            onColumnSizingChange={setColumnSizing}
+          />
+        </div>
       </div>
     </div>
   );

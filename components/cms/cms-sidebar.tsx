@@ -22,6 +22,7 @@ import {
   PanelBottom,
   UserCircle,
   Megaphone,
+  Quote,
   Menu,
   Settings,
   X,
@@ -40,7 +41,7 @@ type NavItem = {
   href: string;
   label: string;
   icon: typeof LayoutDashboard;
-  badge?: "contact" | "registrations" | "membership" | "total";
+  badge?: "contact" | "registrations" | "testimonials" | "membership" | "total";
 };
 
 type NavGroup = {
@@ -74,6 +75,7 @@ const navGroups: NavGroup[] = [
       { href: "/cms/resources", label: "Resources", icon: FolderOpen },
       { href: "/cms/publications", label: "Publications", icon: BookOpen },
       { href: "/cms/events", label: "Events", icon: Calendar },
+      { href: "/cms/testimonials", label: "Testimonials", icon: Quote },
       { href: "/cms/site-footer", label: "Site footer", icon: PanelBottom },
       { href: "/cms/contact", label: "Contact page", icon: MessageCircle },
     ],
@@ -94,6 +96,7 @@ const navGroups: NavGroup[] = [
     description: "Messages and registrations that need a reply.",
     items: [
       { href: "/cms/registration-inbox", label: "Event registrations", icon: ClipboardList, badge: "registrations" },
+      { href: "/cms/testimonial-inbox", label: "Testimonial inbox", icon: Quote, badge: "testimonials" },
       { href: "/cms/contact-inquiries", label: "Contact messages", icon: Inbox, badge: "contact" },
     ],
   },
@@ -116,6 +119,7 @@ function isNavActive(href: string, pathname: string) {
 function badgeCount(badge: NavItem["badge"], counts: ReturnType<typeof useCmsNotificationCounts>["counts"]) {
   if (badge === "contact") return counts.unreadContactInquiries;
   if (badge === "registrations") return counts.unreadRegistrations;
+  if (badge === "testimonials") return counts.unreadTestimonialSubmissions;
   if (badge === "membership") return counts.pendingMembershipPayments;
   if (badge === "total") return counts.totalUnread;
   return 0;

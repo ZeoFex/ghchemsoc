@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { cmsCredentials, CMS_UNAUTHORIZED_MESSAGE } from "@/lib/cms-fetch";
@@ -16,6 +15,8 @@ import { createEmptyRegistrationField } from "@/lib/event-registration-form";
 import { handleCmsResponse } from "@/lib/cms-toast";
 import { isNewsBodyEmpty } from "@/lib/news-content";
 import { HomepageEventsSpotlightCms } from "@/components/cms/homepage-events-spotlight-cms";
+import { CmsDataTable } from "@/components/cms/cms-data-table";
+import type { ColumnDef, ColumnSizingState } from "@tanstack/react-table";
 
 type Row = {
   id: string;
@@ -81,6 +82,7 @@ export function EventsCmsClient() {
   const [form, setForm] = useState(getEmptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [registrationFormExpanded, setRegistrationFormExpanded] = useState(false);
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
 
   const load = useCallback(async () => {
     setErr(null);
@@ -199,6 +201,172 @@ export function EventsCmsClient() {
       await load();
     }
   }
+
+  async function patchRow(id: string, patch: Partial<Pick<Row, "published" | "featured" | "sortOrder" | "title">>) {
+    setErr(null);
+    const res = await fetch(`/api/cms/society-events/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      ...cmsCredentials,
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) {
+      setErr(res.status === 401 ? CMS_UNAUTHORIZED_MESSAGE : await res.text());
+      return false;
+    }
+    return true;
+  }
+
+  async function reorder(next: Row[]) {
+    // Normalize sort order after drag-and-drop.
+    const normalized = next.map((r, i) => ({ ...r, sortOrder: i }));
+    const changed = normalized.filter((r) => rows.find((x) => x.id === r.id)?.sortOrder !== r.sortOrder);
+    setRows(normalized);
+    if (changed.length === 0) return;
+
+    const results = await Promise.all(changed.map((r) => patchRow(r.id, { sortOrder: r.sortOrder })));
+    if (results.every(Boolean)) {
+      await load();
+    }
+  }
+
+  const columns: ColumnDef<Row>[] = [
+    {
+      id: "__drag",
+      header: "",
+      cell: () => null,
+      size: 56,
+      enableResizing: false,
+    },
+    {
+      accessorKey: "sortOrder",
+      header: "Order",
+      size: 90,
+      cell: ({ row, getValue }) => (
+        <CmsInput
+          type="number"
+          className="w-24"
+          defaultValue={Number(getValue())}
+          onBlur={async (e) => {
+            const v = Number(e.target.value);
+            if (!Number.isFinite(v)) return;
+            const ok = await patchRow(row.original.id, { sortOrder: v });
+            if (ok) {
+              setRows((prev) => prev.map((x) => (x.id === row.original.id ? { ...x, sortOrder: v } : x)));
+              await load();
+            }
+          }}
+        />
+      ),
+    },
+    {
+      accessorKey: "published",
+      header: "Live",
+      size: 86,
+      cell: ({ row }) => (
+        <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={row.original.published}
+            onChange={async (e) => {
+              const next = e.target.checked;
+              setRows((prev) => prev.map((x) => (x.id === row.original.id ? { ...x, published: next } : x)));
+              const ok = await patchRow(row.original.id, { published: next });
+              if (!ok) await load();
+            }}
+          />
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {row.original.published ? "Yes" : "No"}
+          </span>
+        </label>
+      ),
+    },
+    {
+      accessorKey: "featured",
+      header: "Featured",
+      size: 110,
+      cell: ({ row }) => (
+        <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={row.original.featured}
+            onChange={async (e) => {
+              const next = e.target.checked;
+              setRows((prev) => prev.map((x) => (x.id === row.original.id ? { ...x, featured: next } : x)));
+              const ok = await patchRow(row.original.id, { featured: next });
+              if (!ok) await load();
+            }}
+          />
+        </label>
+      ),
+    },
+    {
+      accessorKey: "title",
+      header: "Title",
+      size: 360,
+      cell: ({ row, getValue }) => (
+        <button
+          type="button"
+          className="text-left font-semibold text-slate-900 hover:underline"
+          onClick={() => startEdit(row.original)}
+        >
+          {String(getValue())}
+        </button>
+      ),
+    },
+    {
+      id: "whenWhere",
+      header: "When & where",
+      size: 320,
+      cell: ({ row }) => (
+        <div className="space-y-1">
+          <p className="text-sm text-slate-700">{new Date(row.original.startDate).toLocaleString()}</p>
+          <p className="text-xs text-slate-500">{row.original.location}</p>
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      size: 260,
+      enableResizing: true,
+      cell: ({ row }) => (
+        <CmsListActions
+          onEdit={() => startEdit(row.original)}
+          onDelete={() => remove(row.original.id)}
+          confirm={{
+            title: "Delete this event?",
+            description: (
+              <>
+                <span className="font-semibold text-slate-900">&ldquo;{row.original.title}&rdquo;</span>{" "}
+                will be removed from the public events page along with its registration form.
+              </>
+            ),
+            highlights: (
+              <ul className="space-y-1.5">
+                <li className="flex items-start gap-2">
+                  <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                  <span>All registrations attached to this event will be permanently removed.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                  <span>This action cannot be undone.</span>
+                </li>
+              </ul>
+            ),
+            confirmLabel: "Delete event",
+          }}
+        >
+          <Link
+            href={`/cms/events/${row.original.id}`}
+            className="inline-flex items-center justify-center rounded-xl border border-gcs-border bg-white px-4 py-2.5 text-sm font-semibold text-gcs-foreground transition-colors hover:bg-neutral-50"
+          >
+            Form &amp; registrations
+          </Link>
+        </CmsListActions>
+      ),
+    },
+  ];
 
   if (loading) return <p className="text-sm text-slate-500">Loading…</p>;
 
@@ -442,60 +610,16 @@ export function EventsCmsClient() {
 
       <div>
         <CmsSectionTitle>Scheduled events</CmsSectionTitle>
-        <ul className="mt-6 space-y-4">
-          {rows.map((r) => (
-            <li key={r.id}>
-              <CmsCard className="flex flex-col gap-4 p-5 md:flex-row">
-                {r.imageUrl ? (
-                  <div className="relative h-36 w-full shrink-0 overflow-hidden rounded-xl md:h-24 md:w-40">
-                    <Image src={r.imageUrl} alt={r.imageAlt || r.title} fill className="object-cover" sizes="160px" />
-                  </div>
-                ) : null}
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gcs-primary">
-                    {r.featured ? "Featured · " : ""}
-                    {r.published ? "Live" : "Draft"} · sort {r.sortOrder}
-                  </p>
-                  <p className="font-semibold text-slate-900">{r.title}</p>
-                  <p className="mt-1 text-sm text-slate-600">{new Date(r.startDate).toLocaleString()} · {r.location}</p>
-                </div>
-                <CmsListActions
-                  onEdit={() => startEdit(r)}
-                  onDelete={() => remove(r.id)}
-                  confirm={{
-                    title: "Delete this event?",
-                    description: (
-                      <>
-                        <span className="font-semibold text-slate-900">&ldquo;{r.title}&rdquo;</span>{" "}
-                        will be removed from the public events page along with its registration form.
-                      </>
-                    ),
-                    highlights: (
-                      <ul className="space-y-1.5">
-                        <li className="flex items-start gap-2">
-                          <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
-                          <span>All registrations attached to this event will be permanently removed.</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
-                          <span>This action cannot be undone.</span>
-                        </li>
-                      </ul>
-                    ),
-                    confirmLabel: "Delete event",
-                  }}
-                >
-                  <Link
-                    href={`/cms/events/${r.id}`}
-                    className="inline-flex items-center justify-center rounded-xl border border-gcs-border bg-white px-4 py-2.5 text-sm font-semibold text-gcs-foreground transition-colors hover:bg-neutral-50"
-                  >
-                    Form &amp; registrations
-                  </Link>
-                </CmsListActions>
-              </CmsCard>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-6">
+          <CmsDataTable
+            rows={rows}
+            columns={columns}
+            onReorder={reorder}
+            emptyLabel="No events yet."
+            columnSizing={columnSizing}
+            onColumnSizingChange={setColumnSizing}
+          />
+        </div>
       </div>
     </div>
   );

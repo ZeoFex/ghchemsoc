@@ -4,9 +4,9 @@ import { ExploreSection } from "@/components/home/explore-section";
 import { HomeEventsRow } from "@/components/home/home-events-row";
 import { JoinWithCms } from "@/components/home/join-with-cms";
 import { NewsUpdatesSection } from "@/components/home/news-updates-section";
-import { DnaScroll } from "@/components/home/dna-scroll";
+import { ScienceStrip } from "@/components/home/science-strip";
 import { PartnershipsSection } from "@/components/home/partnerships-section";
-import { Testimonials } from "@/components/home/testimonials";
+import { TestimonialsWithCms } from "@/components/home/testimonials-with-cms";
 import { ContactFooter } from "@/components/home/contact-footer";
 import { getHomepageEventsForPublic, getHomepagePartnershipsForPublic, getPublishedSocietyEvents } from "@/lib/cms-queries";
 import { getHomeNewsUpdatesData } from "@/lib/home-news-updates";
@@ -27,9 +27,9 @@ export default async function Home() {
       <HomeEventsRow events={events} settings={eventsSection} />
       <JoinWithCms />
       <NewsUpdatesSection data={newsUpdates} />
-      <DnaScroll />
+      <ScienceStrip />
       <PartnershipsSection data={partnerships} />
-      <Testimonials />
+      <TestimonialsWithCms />
       <ContactFooter />
     </main>
   );

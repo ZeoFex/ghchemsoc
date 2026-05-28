@@ -46,6 +46,7 @@ model Media {
   newsItems NewsItem[]
   publications Publication[]
   societyEvents SocietyEvent[]
+  testimonials Testimonial[]
   homepageExploreMainImage HomepageExploreSettings? @relation("HomepageExploreMainImage")
   homepageExploreSecondaryImage HomepageExploreSettings? @relation("HomepageExploreSecondaryImage")
   homepageEventsSpotlightImage HomepageEventsSettings? @relation("HomepageEventsSpotlightImage")
@@ -370,6 +371,49 @@ model Executive {
 
   @@index([published])
   @@index([sortOrder])
+}
+
+model Testimonial {
+  id        String  @id @default(cuid())
+  sortOrder Int     @default(0)
+  published Boolean @default(true)
+
+  name  String
+  role  String
+  quote String @db.Text
+
+  mediaId String?
+  media   Media? @relation(fields: [mediaId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published])
+  @@index([sortOrder])
+}
+
+enum TestimonialSubmissionStatus {
+  pending
+  approved
+  rejected
+}
+
+model TestimonialSubmission {
+  id     String @id @default(cuid())
+  status TestimonialSubmissionStatus @default(pending)
+  read   Boolean @default(false)
+
+  name  String
+  role  String
+  email String
+  phone String?
+  quote String @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([read])
+  @@index([createdAt])
 }
 
 //

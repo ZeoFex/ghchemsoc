@@ -15,9 +15,11 @@ type Props = {
   line1: string;
   line2: string;
   className?: string;
+  line1ClassName?: string;
+  line2ClassName?: string;
 };
 
-export function ExploreHeadline({ line1, line2, className }: Props) {
+export function ExploreHeadline({ line1, line2, className, line1ClassName, line2ClassName }: Props) {
   const reduceMotion = useReducedMotion();
   const chars1 = useMemo(() => splitChars(line1), [line1]);
   const chars2 = useMemo(() => splitChars(line2), [line2]);
@@ -30,15 +32,15 @@ export function ExploreHeadline({ line1, line2, className }: Props) {
   if (reduceMotion) {
     return (
       <h2 className={headingClass}>
-        <span className="block">{line1}</span>
-        <span className="block">{line2}</span>
+        <span className={line1ClassName ?? "block"}>{line1}</span>
+        <span className={line2ClassName ?? "block"}>{line2}</span>
       </h2>
     );
   }
 
   return (
     <h2 className={headingClass}>
-      <span className="block">
+      <span className={line1ClassName ?? "block"}>
         {chars1.map((char, i) => (
           <motion.span
             key={`l1-${i}-${char}`}
@@ -56,7 +58,7 @@ export function ExploreHeadline({ line1, line2, className }: Props) {
           </motion.span>
         ))}
       </span>
-      <span className="block">
+      <span className={line2ClassName ?? "block"}>
         {chars2.map((char, i) => (
           <motion.span
             key={`l2-${i}-${char}`}

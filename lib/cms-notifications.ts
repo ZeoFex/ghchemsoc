@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 export type CmsNotificationCounts = {
   unreadContactInquiries: number;
   unreadRegistrations: number;
+  unreadTestimonialSubmissions: number;
   pendingMembershipPayments: number;
   totalUnread: number;
 };
@@ -11,6 +12,7 @@ export type CmsNotificationCounts = {
 export const emptyCmsNotificationCounts = (): CmsNotificationCounts => ({
   unreadContactInquiries: 0,
   unreadRegistrations: 0,
+  unreadTestimonialSubmissions: 0,
   pendingMembershipPayments: 0,
   totalUnread: 0,
 });
@@ -24,9 +26,10 @@ function isTransientDbError(err: unknown): boolean {
 }
 
 async function queryCounts(): Promise<CmsNotificationCounts> {
-  const [unreadContactInquiries, unreadRegistrations, pendingMembershipPayments] = await Promise.all([
+  const [unreadContactInquiries, unreadRegistrations, unreadTestimonialSubmissions, pendingMembershipPayments] = await Promise.all([
     prisma.contactInquiry.count({ where: { read: false } }),
     prisma.eventRegistration.count({ where: { read: false } }),
+    prisma.testimonialSubmission.count({ where: { read: false, status: "pending" } }),
     prisma.membershipApplication.count({
       where: { status: "payment_submitted", paymentStatus: "submitted", read: false },
     }),
@@ -34,8 +37,9 @@ async function queryCounts(): Promise<CmsNotificationCounts> {
   return {
     unreadContactInquiries,
     unreadRegistrations,
+    unreadTestimonialSubmissions,
     pendingMembershipPayments,
-    totalUnread: unreadContactInquiries + unreadRegistrations + pendingMembershipPayments,
+    totalUnread: unreadContactInquiries + unreadRegistrations + unreadTestimonialSubmissions + pendingMembershipPayments,
   };
 }
 

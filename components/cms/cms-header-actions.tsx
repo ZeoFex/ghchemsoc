@@ -9,6 +9,7 @@ import type { CmsNotificationCounts } from "@/lib/cms-notifications";
 const empty: CmsNotificationCounts = {
   unreadContactInquiries: 0,
   unreadRegistrations: 0,
+  unreadTestimonialSubmissions: 0,
   pendingMembershipPayments: 0,
   totalUnread: 0,
 };

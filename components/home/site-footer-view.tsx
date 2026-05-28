@@ -31,29 +31,6 @@ function SocialIcon({ platform }: { platform: FooterSocialLink["platform"] }) {
   }
 }
 
-function FooterPhoto({
-  src,
-  alt,
-  className,
-  priority,
-}: {
-  src: string;
-  alt: string;
-  className?: string;
-  priority?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "relative aspect-[5/6] w-full overflow-hidden rounded-2xl shadow-lg shadow-blue-950/40 ring-1 ring-white/20",
-        className
-      )}
-    >
-      <Image src={src} alt={alt} fill className="object-cover" sizes="(max-width: 1024px) 45vw, 220px" priority={priority} />
-    </div>
-  );
-}
-
 export function SiteFooterView({ data }: { data: SiteFooterPublic }) {
   return (
     <footer
@@ -64,6 +41,20 @@ export function SiteFooterView({ data }: { data: SiteFooterPublic }) {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(255,255,255,0.14),transparent_55%)]"
         aria-hidden
       />
+      {/* Subtle photo texture (keeps images, but professional) */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.14]" aria-hidden>
+        <div className="absolute inset-0">
+          <Image
+            src={data.leftImageUrl}
+            alt=""
+            fill
+            className="object-cover object-center blur-[2px] grayscale"
+            sizes="100vw"
+            priority={false}
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-950/40 via-blue-950/10 to-blue-950/55" />
+      </div>
       <div
         className="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-sky-400/20 blur-3xl"
         aria-hidden
@@ -73,38 +64,17 @@ export function SiteFooterView({ data }: { data: SiteFooterPublic }) {
         aria-hidden
       />
 
-      {/* Stay connected — balanced headline + photos */}
+      {/* Stay connected — clean headline (no photo cards) */}
       <div className="relative mx-auto max-w-[1440px] px-4 py-14 sm:px-6 md:px-12 md:py-16 lg:py-20">
-        <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-12">
-          <div className="hidden lg:col-span-3 lg:block xl:col-span-3">
-            <FooterPhoto
-              src={data.leftImageUrl}
-              alt={data.leftImageAlt}
-              className="mx-auto max-w-[220px] xl:max-w-[240px]"
-            />
-          </div>
-
-          <div className="text-center lg:col-span-6 lg:px-4 xl:col-span-6">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-blue-100">Stay connected</p>
-            <h2 className="mt-4 break-words text-[clamp(1.75rem,8vw,4.25rem)] font-semibold leading-[0.92] tracking-tight text-white xl:text-[4.5rem]">
-              <span className="block">{data.headlineLine1}</span>
-              <span className="mt-1 block text-sky-100">{data.headlineLine2}</span>
-            </h2>
-          </div>
-
-          <div className="hidden lg:col-span-3 lg:block xl:col-span-3">
-            <FooterPhoto
-              src={data.rightImageUrl}
-              alt={data.rightImageAlt}
-              className="mx-auto max-w-[220px] xl:max-w-[240px]"
-            />
-          </div>
-        </div>
-
-        {/* Tablet / mobile — photos under headline, side by side */}
-        <div className="mx-auto mt-10 grid max-w-lg grid-cols-2 gap-4 sm:gap-6 lg:hidden">
-          <FooterPhoto src={data.leftImageUrl} alt={data.leftImageAlt} priority />
-          <FooterPhoto src={data.rightImageUrl} alt={data.rightImageAlt} />
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.34em] text-blue-100/90">
+            Stay connected
+          </p>
+          <h2 className="mt-5 break-words text-[clamp(1.85rem,7vw,4.1rem)] font-semibold leading-[0.95] tracking-tight text-white">
+            <span className="block">{data.headlineLine1}</span>
+            <span className="mt-1 block text-sky-100">{data.headlineLine2}</span>
+          </h2>
+          <div className="mx-auto mt-8 h-px w-20 bg-white/25" aria-hidden />
         </div>
       </div>
 

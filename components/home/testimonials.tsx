@@ -5,44 +5,28 @@ import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const testimonials = [
-    {
-        name: "Prof. Kwame Mensah",
-        role: "Professor of Chemistry · University of Ghana",
-        image:
-            "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=200&auto=format&fit=crop",
-        quote:
-            "GCS has been indispensable for building bridges between departments and industry. The society elevates standards for teaching and research chemistry nationwide.",
-    },
-    {
-        name: "Dr. Ama Serwaa Osei",
-        role: "Principal Scientist · Ghana Standards Authority",
-        image:
-            "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop",
-        quote:
-            "Through workshops and technical programmes, GCS gives practitioners access to cutting-edge practice and a network of peers we can rely on for real-world problems.",
-    },
-    {
-        name: "Kofi Owusu-Ankomah",
-        role: "PhD Researcher · Catalysis & Green Chemistry",
-        image:
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop",
-        quote:
-            "Presenting at the annual symposium and connecting with mentors through the society opened doors I would not have found on my own. It is the hub for early-career chemists.",
-    },
-    {
-        name: "Efua Brookman",
-        role: "R&D Lead · Pharmaceutical Manufacturing",
-        image:
-            "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=200&auto=format&fit=crop",
-        quote:
-            "The Ghana Chemical Society represents the rigour and collaboration our sector needs. Membership signals commitment to ethics, safety, and scientific excellence.",
-    },
-];
+export type TestimonialItem = {
+    id: string;
+    name: string;
+    role: string;
+    quote: string;
+    imageUrl?: string | null;
+    imageAlt?: string | null;
+};
 
-export function Testimonials() {
+export function Testimonials({ testimonials }: { testimonials: TestimonialItem[] }) {
     const [index, setIndex] = useState(0);
     const [direction, setDirection] = useState(0);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitOk, setSubmitOk] = useState<string | null>(null);
+    const [submitErr, setSubmitErr] = useState<string | null>(null);
+    const [form, setForm] = useState({
+        name: "",
+        role: "",
+        email: "",
+        phone: "",
+        quote: "",
+    });
 
     const next = useCallback(() => {
         setDirection(1);
@@ -55,9 +39,10 @@ export function Testimonials() {
     }, []);
 
     useEffect(() => {
+        if (testimonials.length <= 1) return;
         const timer = setInterval(next, 6000);
         return () => clearInterval(timer);
-    }, [next]);
+    }, [next, testimonials.length]);
 
     const variants = {
         enter: (direction: number) => ({
@@ -119,26 +104,32 @@ export function Testimonials() {
                                     ❝
                                 </span>
                                 <p className="break-words text-xl font-medium italic leading-relaxed tracking-tight text-gcs-foreground sm:text-2xl md:text-3xl lg:text-4xl">
-                                    {testimonials[index].quote}
+                                    {testimonials[index]?.quote ?? ""}
                                 </p>
                             </div>
 
                             <div className="flex flex-col items-center gap-4">
                                 <div className="relative h-20 w-20 overflow-hidden rounded-3xl border-4 border-white shadow-2xl shadow-slate-900/10 transition-transform duration-500 transform rotate-3 hover:rotate-0 md:h-24 md:w-24">
-                                    <Image
-                                        src={testimonials[index].image}
-                                        alt={testimonials[index].name}
-                                        fill
-                                        className="object-cover"
-                                        sizes="96px"
-                                    />
+                                    {testimonials[index]?.imageUrl ? (
+                                        <Image
+                                            src={testimonials[index].imageUrl}
+                                            alt={testimonials[index].imageAlt ?? testimonials[index].name}
+                                            fill
+                                            className="object-cover"
+                                            sizes="96px"
+                                        />
+                                    ) : (
+                                        <div className="flex h-full w-full items-center justify-center bg-slate-100 text-base font-semibold text-slate-500">
+                                            {(testimonials[index]?.name ?? "G").slice(0, 1).toUpperCase()}
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <h4 className="text-xl font-bold text-gcs-foreground transition-all md:text-2xl">
-                                        {testimonials[index].name}
+                                        {testimonials[index]?.name ?? ""}
                                     </h4>
                                     <p className="mt-1 text-xs font-medium uppercase tracking-wide text-gcs-muted-text md:text-sm normal-case">
-                                        {testimonials[index].role}
+                                        {testimonials[index]?.role ?? ""}
                                     </p>
                                 </div>
                             </div>
@@ -182,6 +173,124 @@ export function Testimonials() {
                         >
                             <ChevronRight className="h-5 w-5" />
                         </button>
+                    </div>
+                </div>
+
+                <div className="mx-auto mt-20 w-full max-w-3xl">
+                    <div className="rounded-3xl border border-gcs-border/80 bg-white p-6 shadow-sm sm:p-8">
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gcs-muted-text">
+                            Leave a review
+                        </p>
+                        <h3 className="mt-3 text-xl font-semibold tracking-tight text-gcs-foreground sm:text-2xl">
+                            Share your experience with GCS
+                        </h3>
+                        <p className="mt-2 text-sm leading-relaxed text-gcs-muted-text">
+                            Your testimonial will appear on the homepage after submission.
+                        </p>
+
+                        {submitErr ? (
+                            <p className="mt-5 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">{submitErr}</p>
+                        ) : null}
+                        {submitOk ? (
+                            <p className="mt-5 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900">{submitOk}</p>
+                        ) : null}
+
+                        <form
+                            className="mt-6 grid gap-4 sm:grid-cols-2"
+                            onSubmit={async (e) => {
+                                e.preventDefault();
+                                setSubmitErr(null);
+                                setSubmitOk(null);
+                                setSubmitting(true);
+                                try {
+                                    const res = await fetch("/api/public/testimonials", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                            name: form.name,
+                                            role: form.role,
+                                            email: form.email,
+                                            phone: form.phone || undefined,
+                                            quote: form.quote,
+                                        }),
+                                    });
+                                    const body = (await res.json().catch(() => null)) as { error?: unknown } | null;
+                                    if (!res.ok) {
+                                        const msg =
+                                            typeof body?.error === "string"
+                                                ? body.error
+                                                : "Could not submit your testimonial. Please try again.";
+                                        setSubmitErr(msg);
+                                        return;
+                                    }
+                                    setSubmitOk("Thanks — your testimonial has been sent for review.");
+                                    setForm({ name: "", role: "", email: "", phone: "", quote: "" });
+                                } finally {
+                                    setSubmitting(false);
+                                }
+                            }}
+                        >
+                            <label className="text-left text-sm font-medium text-slate-700">
+                                Name
+                                <input
+                                    required
+                                    value={form.name}
+                                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-gcs-foreground shadow-sm outline-none transition-shadow placeholder:text-slate-400 focus:border-gcs-primary focus:ring-2 focus:ring-gcs-primary/15"
+                                    placeholder="Your name"
+                                />
+                            </label>
+                            <label className="text-left text-sm font-medium text-slate-700">
+                                Role / affiliation
+                                <input
+                                    required
+                                    value={form.role}
+                                    onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+                                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-gcs-foreground shadow-sm outline-none transition-shadow placeholder:text-slate-400 focus:border-gcs-primary focus:ring-2 focus:ring-gcs-primary/15"
+                                    placeholder="e.g. Lecturer, University of Ghana"
+                                />
+                            </label>
+                            <label className="text-left text-sm font-medium text-slate-700">
+                                Email
+                                <input
+                                    required
+                                    type="email"
+                                    value={form.email}
+                                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-gcs-foreground shadow-sm outline-none transition-shadow placeholder:text-slate-400 focus:border-gcs-primary focus:ring-2 focus:ring-gcs-primary/15"
+                                    placeholder="you@example.com"
+                                />
+                            </label>
+                            <label className="text-left text-sm font-medium text-slate-700">
+                                Phone (optional)
+                                <input
+                                    value={form.phone}
+                                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-gcs-foreground shadow-sm outline-none transition-shadow placeholder:text-slate-400 focus:border-gcs-primary focus:ring-2 focus:ring-gcs-primary/15"
+                                    placeholder="+233…"
+                                />
+                            </label>
+                            <label className="sm:col-span-2 text-left text-sm font-medium text-slate-700">
+                                Testimonial
+                                <textarea
+                                    required
+                                    rows={5}
+                                    value={form.quote}
+                                    onChange={(e) => setForm((f) => ({ ...f, quote: e.target.value }))}
+                                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-gcs-foreground shadow-sm outline-none transition-shadow placeholder:text-slate-400 focus:border-gcs-primary focus:ring-2 focus:ring-gcs-primary/15"
+                                    placeholder="Write your review..."
+                                />
+                            </label>
+                            <div className="sm:col-span-2 flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="inline-flex items-center justify-center rounded-full bg-gcs-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-gcs-primary-hover disabled:opacity-60"
+                                >
+                                    {submitting ? "Submitting…" : "Submit testimonial"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

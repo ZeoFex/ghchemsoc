@@ -169,6 +169,44 @@ html:has([data-member-portal]) body {
   border-collapse: collapse;
 }
 
+.cms-rich-editor table {
+  width: 100%;
+  max-width: 100%;
+  margin: 1.25rem 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 2px solid #7c3aed; /* violet-600 */
+  background: #f5f3ff; /* violet-50 */
+  border-radius: 0.9rem;
+  overflow: hidden;
+}
+
+.cms-rich-editor th,
+.cms-rich-editor td {
+  border-bottom: 1px solid rgba(124, 58, 237, 0.25);
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  vertical-align: top;
+  color: #0f172a;
+  background: rgba(245, 243, 255, 0.75);
+}
+
+.cms-rich-editor th {
+  background: #ede9fe; /* violet-100 */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+.cms-rich-editor tbody tr:nth-child(odd) td {
+  background: rgba(221, 214, 254, 0.55); /* violet-200 */
+}
+
+.cms-rich-editor tr:last-child td {
+  border-bottom: 0;
+}
+
 .news-article-prose th,
 .news-article-prose td,
 .gcs-rich-html th,

@@ -32,6 +32,7 @@ function buildSections(counts: CmsNotificationCounts): DashboardModuleSection[] 
         { href: "/cms/homepage-explore", title: "Mission section", desc: "Story and imagery below the banner.", icon: "House" },
         { href: "/cms/join", title: "Join section", desc: "Membership invitation on the homepage.", icon: "Users" },
         { href: "/cms/partnerships", title: "Partners", desc: "Partner logos and links.", icon: "Handshake" },
+        { href: "/cms/testimonials", title: "Testimonials", desc: "Member voices carousel content.", icon: "MessageCircle" },
         { href: "/cms/site-footer", title: "Footer", desc: "Links and contact details at the bottom of every page.", icon: "PanelBottom" },
       ],
     },
@@ -82,6 +83,13 @@ function buildSections(counts: CmsNotificationCounts): DashboardModuleSection[] 
           desc: "Registrations from event pages.",
           icon: "ClipboardList",
           badge: counts.unreadRegistrations,
+        },
+        {
+          href: "/cms/testimonial-inbox",
+          title: "Testimonials inbox",
+          desc: "Reviews submitted from the public site.",
+          icon: "MessageCircle",
+          badge: counts.unreadTestimonialSubmissions,
         },
         {
           href: "/cms/analytics",
@@ -216,6 +224,15 @@ export function CmsDashboard({ counts, stats, degraded }: CmsDashboardProps) {
           count: counts.unreadRegistrations,
           description: "Recent event registrations to check.",
           cta: "View sign-ups",
+        }
+      : null,
+    counts.unreadTestimonialSubmissions > 0
+      ? {
+          href: "/cms/testimonial-inbox",
+          label: "Testimonials",
+          count: counts.unreadTestimonialSubmissions,
+          description: "New reviews submitted from the public site.",
+          cta: "Review now",
         }
       : null,
   ].filter(Boolean);

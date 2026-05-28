@@ -34,6 +34,8 @@ import { aboutSectionsPublicFallback } from "@/lib/about-section-defaults";
 import { fetchPublishedAboutSections } from "@/lib/about-sections";
 import { executivesPublicFallback } from "@/lib/executive-defaults";
 import { fetchPublishedExecutives, mapExecutivePublic } from "@/lib/executives";
+import { testimonialsPublicFallback } from "@/lib/testimonial-defaults";
+import { fetchPublishedTestimonials, mapTestimonialPublic } from "@/lib/testimonials";
 import {
   RESOURCES_PAGE_DEFAULTS,
   RESOURCES_PAGE_ID,
@@ -56,6 +58,32 @@ export async function getPublishedExecutives() {
     "getPublishedExecutives",
     async () => (await fetchPublishedExecutives()).map(mapExecutivePublic),
     executivesPublicFallback()
+  );
+}
+
+export async function getPublishedTestimonials() {
+  return withDbFallback(
+    "getPublishedTestimonials",
+    async () => (await fetchPublishedTestimonials()).map(mapTestimonialPublic),
+    testimonialsPublicFallback()
+  );
+}
+
+export async function getPublishedExecutiveById(id: string) {
+  return withDbFallback(
+    "getPublishedExecutiveById",
+    async () => {
+      const row = await prisma.executive.findFirst({
+        where: { id, published: true },
+        include: { media: true },
+      });
+      if (!row) return null;
+      return mapExecutivePublic(row);
+    },
+    (() => {
+      const fallback = executivesPublicFallback();
+      return fallback.find((e) => e.id === id) ?? null;
+    })()
   );
 }
 

@@ -34,11 +34,14 @@ function SectionBody({ body }: { body: string }) {
 
 function ImageCard({ s, featured }: { s: AboutSection; featured?: boolean }) {
   const showExec = sectionLinksToExecutives(s);
+  const reverseDesktop = s.layout === "reverse";
 
   return (
     <article
       className={cn(
         "overflow-hidden rounded-2xl border border-gcs-border/50 bg-white shadow-[0_12px_40px_-18px_rgba(29,78,216,0.12)] ring-1 ring-gcs-border/30 sm:rounded-3xl",
+        // Split layout + bigger cards on desktop
+        "md:grid md:grid-cols-2 md:items-stretch",
         featured ? "md:col-span-2" : ""
       )}
       data-aos="fade-up"
@@ -46,7 +49,9 @@ function ImageCard({ s, featured }: { s: AboutSection; featured?: boolean }) {
       <div
         className={cn(
           "relative w-full overflow-hidden bg-slate-100",
-          featured ? "aspect-[16/10] sm:aspect-[2/1]" : "aspect-[4/3]"
+          // Mobile: image on top; Desktop: split panel
+          "aspect-[16/10] sm:aspect-[2/1] md:aspect-auto md:min-h-[340px]",
+          reverseDesktop ? "md:order-1" : "md:order-2"
         )}
       >
         <Image
@@ -56,16 +61,24 @@ function ImageCard({ s, featured }: { s: AboutSection; featured?: boolean }) {
           className="object-cover object-center"
           sizes={featured ? "(max-width: 768px) 100vw, 1100px" : "(max-width: 768px) 100vw, 540px"}
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-transparent md:bg-gradient-to-l md:from-slate-950/15 md:via-transparent md:to-transparent" />
       </div>
 
-      <div className="border-t border-gcs-border/40 px-5 py-6 sm:px-7 sm:py-7">
-        <h2 className="text-lg font-semibold tracking-tight text-gcs-foreground sm:text-xl">{s.title}</h2>
-        {s.subtitle ? <p className="mt-1 text-sm font-medium text-gcs-primary sm:text-base">{s.subtitle}</p> : null}
+      <div
+        className={cn(
+          "border-t border-gcs-border/40 px-5 py-7 sm:px-7 sm:py-8",
+          "md:border-t-0 md:border-gcs-border/40 md:px-10 md:py-12",
+          reverseDesktop ? "md:order-2 md:border-l" : "md:order-1 md:border-r"
+        )}
+      >
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gcs-muted-text">About</p>
+        <h2 className="mt-3 text-xl font-semibold tracking-tight text-gcs-foreground sm:text-2xl">{s.title}</h2>
+        {s.subtitle ? <p className="mt-2 text-sm font-semibold text-gcs-primary sm:text-base">{s.subtitle}</p> : null}
         <SectionBody body={s.body} />
         {showExec ? (
           <Link
             href="/executives"
-            className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-gcs-primary hover:text-gcs-primary-hover"
+            className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-gcs-primary hover:text-gcs-primary-hover"
           >
             View leadership
             <ArrowUpRight className="h-4 w-4" />
@@ -123,9 +136,17 @@ export function AboutSections({ sections }: { sections: AboutSection[] }) {
       ) : null}
 
       {withImages.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 md:gap-8">
+        <div className="grid gap-6 md:gap-8">
           {withImages.map((s, i) => (
-            <ImageCard key={s.id} s={s} featured={i === 0 || s.layout === "wide"} />
+            <ImageCard
+              key={s.id}
+              s={{
+                ...s,
+                // Alternate layout: text-left/image-right, then image-left/text-right
+                layout: s.layout === "wide" ? "wide" : i % 2 === 1 ? "reverse" : s.layout,
+              }}
+              featured={i === 0 || s.layout === "wide"}
+            />
           ))}
         </div>
       ) : null}

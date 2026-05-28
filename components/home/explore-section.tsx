@@ -5,27 +5,60 @@ import { Button } from "@/components/ui/button";
 import { ExploreHeadline } from "@/components/home/explore-headline";
 import { getHomepageExploreForPublic } from "@/lib/cms-queries";
 
+function normalizeHeadlineText(text: string) {
+  let t = text;
+  t = t.replace(/\s+/g, " ").trim();
+  // Common missing-space issues from CMS inputs.
+  // Make this robust to variants like "Advancingchemistryfor", "Advancing chemistryfor", etc.
+  t = t.replace(/advancing\s*chemistry\s*for/gi, "Advancing chemistry for");
+  t = t.replace(/advancingchemistryfor/gi, "Advancing chemistry for");
+  t = t.replace(/chemistry\s*for/gi, "chemistry for");
+  t = t.replace(/chemistryfor/gi, "chemistry for");
+  // Ghana'suniversities -> Ghana's universities
+  t = t.replace(/('s)([A-Za-z])/g, "$1 $2");
+  // Ensure spaces after commas.
+  t = t.replace(/,(\S)/g, ", $1");
+  // Ensure spaces around "and" when glued.
+  t = t.replace(/,and/gi, ", and");
+  t = t.replace(/\band([A-Za-z])/g, "and $1");
+  // Ensure Oxford comma spacing for the common "universities,laboratories,andindustries" pattern.
+  t = t.replace(/universities,\s*laboratories,\s*and\s*industries/gi, "universities, laboratories, and industries");
+  return t.replace(/\s+/g, " ").trim();
+}
+
 export async function ExploreSection() {
   const s = await getHomepageExploreForPublic();
+  const headlineLine1 = normalizeHeadlineText(s.headlineLine1);
+  const headlineLine2 = normalizeHeadlineText(s.headlineLine2);
 
   return (
     <section
       className="w-full overflow-hidden bg-gcs-surface px-4 py-16 text-gcs-foreground sm:px-6 sm:py-20 md:px-12 md:py-24"
       data-aos="fade-up"
     >
-      <div className="mb-14 flex flex-col items-center text-center md:mb-16" data-aos="fade-up" data-aos-delay="80">
-        <div className="mb-6 inline-flex cursor-default items-center gap-2 rounded-full border border-gcs-border bg-white px-4 py-1.5 text-sm font-medium text-gcs-muted-text shadow-sm transition-colors">
-          {s.missionEyebrow} <ArrowRight className="h-3.5 w-3.5 text-gcs-primary" />
+      <div className="mx-auto mb-14 max-w-[1100px] text-center md:mb-16" data-aos="fade-up" data-aos-delay="80">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gcs-muted-text">{s.missionEyebrow}</p>
+        <div className="mt-4">
+          <ExploreHeadline
+            line1={headlineLine1}
+            line2={headlineLine2}
+            className="mx-auto max-w-4xl break-words text-3xl font-normal leading-[1.16] tracking-[-0.01em] text-gcs-foreground sm:text-4xl md:text-[2.65rem] md:leading-[1.12]"
+            line1ClassName="block text-slate-700"
+            line2ClassName="mt-2 block text-gcs-primary"
+          />
         </div>
-        <ExploreHeadline line1={s.headlineLine1} line2={s.headlineLine2} />
+        <div className="mx-auto mt-8 h-px w-20 bg-gcs-border/80" aria-hidden />
       </div>
 
       <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
         <div className="flex flex-col justify-start pt-1 lg:col-span-3" data-aos="fade-up" data-aos-delay="100">
-          <div className="mb-6 inline-block self-start rounded-full border border-gcs-border bg-white px-4 py-1.5 text-sm font-medium text-gcs-muted-text shadow-sm">
+          <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-gcs-border bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-gcs-muted-text shadow-sm">
             {s.aboutEyebrow}
+            <ArrowRight className="h-3.5 w-3.5 text-gcs-primary" aria-hidden />
           </div>
-          <p className="mb-8 text-lg font-medium leading-relaxed text-gcs-foreground sm:text-xl md:text-2xl">{s.aboutBody}</p>
+          <p className="mb-7 text-base font-normal leading-relaxed text-gcs-muted-text sm:text-lg">
+            {s.aboutBody}
+          </p>
           <Button
             asChild
             className="group mt-auto h-12 w-fit gap-3 rounded-full border-0 bg-gcs-primary px-6 text-base text-white shadow-sm hover:bg-gcs-primary-hover"

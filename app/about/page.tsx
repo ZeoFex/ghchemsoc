@@ -7,7 +7,7 @@ import { AboutExecutivesTeaser } from "@/components/about/about-executives-tease
 import { AboutSections } from "@/components/about/about-sections";
 import { getHomepageExploreForPublic, getPublishedAboutSections, getPublishedExecutives } from "@/lib/cms-queries";
 import type { HomepageExplorePublic } from "@/lib/homepage-explore";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Users } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About | Ghana Chemical Society",
@@ -17,25 +17,56 @@ export const metadata: Metadata = {
 function MissionIntro({ mission }: { mission: HomepageExplorePublic }) {
   return (
     <div
-      className="border-b border-gcs-border/50 bg-gradient-to-b from-blue-50/40 to-white"
+      className="border-b border-gcs-border/60 bg-gradient-to-b from-blue-50/60 via-white to-white"
       data-aos="fade-up"
     >
       <div className="mx-auto max-w-[1100px] px-4 py-10 sm:px-6 md:px-10 md:py-14">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gcs-primary">
-          {mission.missionEyebrow}
-        </p>
-        <h2 className="mt-3 max-w-3xl text-2xl font-semibold tracking-tight text-gcs-foreground sm:text-3xl">
-          {mission.headlineLine1}{" "}
-          <span className="text-gcs-primary">{mission.headlineLine2}</span>
-        </h2>
-        {mission.aboutBody ? (
-          <p className="gcs-lead mt-5 max-w-3xl text-gcs-muted-text">{mission.aboutBody}</p>
-        ) : null}
-        {mission.bottomBlurb ? (
-          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-gcs-muted-text sm:text-base">
-            {mission.bottomBlurb}
-          </p>
-        ) : null}
+        <div className="grid gap-6 md:grid-cols-[1fr_360px] md:items-start">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gcs-primary">
+              {mission.missionEyebrow}
+            </p>
+            <h2 className="mt-3 max-w-3xl text-2xl font-semibold tracking-tight text-gcs-foreground sm:text-3xl">
+              {mission.headlineLine1}{" "}
+              <span className="text-gcs-primary">{mission.headlineLine2}</span>
+            </h2>
+            {mission.aboutBody ? (
+              <p className="gcs-lead mt-5 max-w-3xl text-gcs-muted-text">{mission.aboutBody}</p>
+            ) : null}
+            {mission.bottomBlurb ? (
+              <p className="mt-4 max-w-3xl text-sm leading-relaxed text-gcs-muted-text sm:text-base">
+                {mission.bottomBlurb}
+              </p>
+            ) : null}
+          </div>
+
+          <aside className="rounded-3xl border border-blue-100/80 bg-white p-6 shadow-[0_14px_40px_-18px_rgba(29,78,216,0.20)] ring-1 ring-blue-50">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Quick links</p>
+            <div className="mt-4 space-y-3">
+              <a
+                href="#about-sections"
+                className="group flex items-center justify-between rounded-2xl border border-gcs-border/70 bg-neutral-50/80 px-4 py-3 text-sm font-semibold text-gcs-foreground transition hover:bg-white"
+              >
+                Society overview
+                <ArrowDown className="h-4 w-4 text-gcs-primary transition-transform group-hover:translate-y-0.5" aria-hidden />
+              </a>
+              <Link
+                href="/executives"
+                className="group flex items-center justify-between rounded-2xl border border-blue-200/70 bg-blue-50/60 px-4 py-3 text-sm font-semibold text-gcs-foreground transition hover:bg-blue-50"
+              >
+                Leadership
+                <Users className="h-4 w-4 text-gcs-primary" aria-hidden />
+              </Link>
+              <Link
+                href="/membership"
+                className="group flex items-center justify-between rounded-2xl bg-gcs-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-gcs-primary-hover"
+              >
+                Join GCS
+                <ArrowUpRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
+          </aside>
+        </div>
       </div>
     </div>
   );
@@ -52,25 +83,54 @@ export default async function AboutPage() {
     <>
       <Header />
       <main className="min-h-screen bg-white text-gcs-foreground">
-        {/* Hero image */}
-        <section className="relative">
-          <div className="relative aspect-[16/9] max-h-[min(52vh,520px)] min-h-[240px] w-full overflow-hidden bg-slate-900 sm:aspect-[21/9]">
-            <Image
-              src={mission.mainImageUrl}
-              alt={mission.mainImageAlt}
-              fill
-              className="object-cover object-center"
-              sizes="100vw"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 px-4 pb-8 pt-16 sm:px-6 md:px-10 md:pb-10">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/75">
+        {/* Hero: single background image (no headline card) */}
+        <section className="relative overflow-hidden border-b border-blue-100/70 bg-slate-950">
+          <Image
+            src={mission.mainImageUrl}
+            alt={mission.mainImageAlt}
+            fill
+            className="object-cover object-center"
+            sizes="100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/35 to-slate-950/10" />
+          <div
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_50%_0%,rgba(29,78,216,0.22),transparent_60%)]"
+            aria-hidden
+          />
+
+          <div className="relative mx-auto max-w-[1100px] px-4 pb-14 pt-28 sm:px-6 md:px-10 md:pb-20 md:pt-32">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white/85 backdrop-blur-md">
                 {mission.aboutEyebrow}
-              </p>
-              <p className="mt-2 max-w-xl text-lg font-medium text-white/95 sm:text-xl">
-                {mission.imageBadge}
-              </p>
+              </div>
+              <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold text-white/90 backdrop-blur-md">
+                {mission.locationLabel}
+              </div>
+            </div>
+
+            <div className="mt-10 flex flex-wrap items-center gap-3">
+              <Link
+                href="/membership"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-gcs-primary shadow-sm"
+              >
+                Join GCS
+                <ArrowUpRight className="h-4 w-4" aria-hidden />
+              </Link>
+              <Link
+                href="/executives"
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/15"
+              >
+                Meet leadership
+                <Users className="h-4 w-4" aria-hidden />
+              </Link>
+              <a
+                href="#about-sections"
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-transparent px-6 py-3 text-sm font-semibold text-white/90 transition hover:border-white/25 hover:bg-white/5"
+              >
+                Learn more
+                <ArrowDown className="h-4 w-4" aria-hidden />
+              </a>
             </div>
           </div>
         </section>
@@ -78,7 +138,7 @@ export default async function AboutPage() {
         <MissionIntro mission={mission} />
 
         {/* CMS sections: mission, core values, etc. */}
-        <section className="mx-auto max-w-[1100px] px-4 py-12 sm:px-6 md:px-10 md:py-16">
+        <section id="about-sections" className="mx-auto max-w-[1100px] px-4 py-12 sm:px-6 md:px-10 md:py-16">
           <AboutSections sections={sections} />
           <AboutExecutivesTeaser executives={executives} />
         </section>
