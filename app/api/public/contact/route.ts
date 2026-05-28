@@ -11,7 +11,7 @@ function defaultCards() {
 }
 
 export async function GET() {
-  let row = await getContactSettings();
+  const row = await getContactSettings();
   if (!row) {
     return NextResponse.json({
       eyebrow: "Contact",

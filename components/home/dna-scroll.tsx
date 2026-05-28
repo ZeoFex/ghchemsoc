@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import type { MotionValue } from "framer-motion";
 
 export function DnaScroll() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -183,7 +184,19 @@ export function DnaScroll() {
     );
 }
 
-function TextSection({ progress, start, end, children, align = "center" }: any) {
+function TextSection({
+    progress,
+    start,
+    end,
+    children,
+    align = "center",
+}: {
+    progress: MotionValue<number>;
+    start: number;
+    end: number;
+    children: React.ReactNode;
+    align?: "center" | "left" | "right";
+}) {
     const opacity = useTransform(progress,
         [start, start + 0.1, end - 0.1, end],
         [0, 1, 1, 0]
