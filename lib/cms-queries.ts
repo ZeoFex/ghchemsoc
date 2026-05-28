@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { withDbFallback } from "@/lib/db-fallback";
+import { Prisma } from "@prisma/client";
 import {
   HOMEPAGE_EXPLORE_ID,
   homepageExploreCreateData,
@@ -106,16 +107,24 @@ export async function getJoinPageForPublic() {
 }
 
 export async function getPublishedNewsItems() {
-  return withDbFallback(
-    "getPublishedNewsItems",
-    () =>
-      prisma.newsItem.findMany({
-        where: { published: true },
-        orderBy: [{ sortOrder: "asc" }, { date: "desc" }],
-        include: { media: true },
-      }),
-    []
-  );
+  try {
+    return await withDbFallback(
+      "getPublishedNewsItems",
+      () =>
+        prisma.newsItem.findMany({
+          where: { published: true },
+          orderBy: [{ sortOrder: "asc" }, { date: "desc" }],
+          include: { media: true },
+        }),
+      []
+    );
+  } catch (error) {
+    // Production safety: if the table is missing (migration drift), don't 500 the whole site.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && (error.code === "P2021" || error.code === "P1014")) {
+      return [];
+    }
+    throw error;
+  }
 }
 
 const publicationInclude = {
@@ -169,40 +178,61 @@ export async function getFeaturedPublication() {
 }
 
 export async function getNewsBySlug(slug: string) {
-  return withDbFallback(
-    "getNewsBySlug",
-    () =>
-      prisma.newsItem.findFirst({
-        where: { slug, published: true },
-        include: { media: true },
-      }),
-    null
-  );
+  try {
+    return await withDbFallback(
+      "getNewsBySlug",
+      () =>
+        prisma.newsItem.findFirst({
+          where: { slug, published: true },
+          include: { media: true },
+        }),
+      null
+    );
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && (error.code === "P2021" || error.code === "P1014")) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function getPublishedSocietyEvents() {
-  return withDbFallback(
-    "getPublishedSocietyEvents",
-    () =>
-      prisma.societyEvent.findMany({
-        where: { published: true },
-        orderBy: [{ featured: "desc" }, { sortOrder: "asc" }, { startDate: "asc" }],
-        include: { media: true },
-      }),
-    []
-  );
+  try {
+    return await withDbFallback(
+      "getPublishedSocietyEvents",
+      () =>
+        prisma.societyEvent.findMany({
+          where: { published: true },
+          orderBy: [{ featured: "desc" }, { sortOrder: "asc" }, { startDate: "asc" }],
+          include: { media: true },
+        }),
+      []
+    );
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && (error.code === "P2021" || error.code === "P1014")) {
+      return [];
+    }
+    throw error;
+  }
 }
 
 export async function getPublishedSocietyEventById(id: string) {
-  return withDbFallback(
-    "getPublishedSocietyEventById",
-    () =>
-      prisma.societyEvent.findFirst({
-        where: { id, published: true },
-        include: { media: true },
-      }),
-    null
-  );
+  try {
+    return await withDbFallback(
+      "getPublishedSocietyEventById",
+      () =>
+        prisma.societyEvent.findFirst({
+          where: { id, published: true },
+          include: { media: true },
+        }),
+      null
+    );
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && (error.code === "P2021" || error.code === "P1014")) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function getContactSettings() {
