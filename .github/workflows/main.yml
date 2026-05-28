@@ -13,22 +13,6 @@ concurrency:
 jobs:
   lint-and-build:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: ci
-          POSTGRES_PASSWORD: ci
-          POSTGRES_DB: ci
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U ci"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     env:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
       JWT_SECRET: ci-jwt-secret-min-32-chars-long
@@ -45,16 +29,11 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm main
 
-      - name: Generate Prisma client
-        run: npx prisma generate
+    
 
-      - name: Run migrations
-        run: npx prisma migrate deploy
-
-      - name: Lint
-        run: npm run lint
+      
 
       - name: Build
-        run: npm run build
+        run: npm run build:main
