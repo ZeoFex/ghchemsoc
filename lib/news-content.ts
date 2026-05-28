@@ -1,4 +1,4 @@
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 
 const ALLOWED_TAGS = [
   "p",
@@ -23,18 +23,6 @@ const ALLOWED_TAGS = [
   "tr",
   "th",
   "td",
-];
-
-const ALLOWED_ATTR = [
-  "href",
-  "target",
-  "rel",
-  "src",
-  "alt",
-  "class",
-  "style",
-  "colspan",
-  "rowspan",
 ];
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -76,13 +64,24 @@ export function excerptFromHtml(html: string | null | undefined, maxLen = 220): 
   return `${(lastSpace > 80 ? cut.slice(0, lastSpace) : cut).trim()}…`;
 }
 
+const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: ALLOWED_TAGS,
+  allowedAttributes: {
+    "*": ["class", "style"],
+    a: ["href", "target", "rel", "class", "style"],
+    img: ["src", "alt", "class", "style"],
+    th: ["colspan", "rowspan", "class", "style"],
+    td: ["colspan", "rowspan", "class", "style"],
+  },
+  allowedSchemes: ["http", "https", "mailto"],
+  allowedSchemesByTag: {
+    img: ["http", "https"],
+  },
+};
+
 export function sanitizeNewsHtml(html: string | null | undefined): string {
   if (!html?.trim()) return "";
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS,
-    ALLOWED_ATTR,
-    ALLOW_DATA_ATTR: false,
-  });
+  return sanitizeHtml(html, SANITIZE_OPTIONS);
 }
 
 export function isNewsBodyEmpty(html: string | null | undefined): boolean {
