@@ -7,8 +7,8 @@ import { buildMetadata } from "@/lib/seo";
 import type { MembershipPaymentMethod } from "@prisma/client";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Application pending",
-  description: "Your membership payment is being reviewed by the GCS secretariat.",
+  title: "Payment under review",
+  description: "Your membership payment has been received and is being reviewed by the GCS secretariat.",
   path: "/membership/pending",
   noIndex: true,
 });

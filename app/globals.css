@@ -288,3 +288,17 @@ html:has([data-member-portal]) body {
 .news-article-prose strong {
   font-weight: 600;
 }
+
+/* Paystack inline checkout — lighter overlay (same-origin wrapper only) */
+#paystack-checkout-background,
+.paystack-checkout-background {
+  background: rgba(255, 255, 255, 0.62) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+#paystack-checkout-iframe,
+.paystack-checkout-iframe {
+  border-radius: 1rem !important;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.18) !important;
+}

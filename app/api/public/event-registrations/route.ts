@@ -7,9 +7,11 @@ import {
   validateRegistrationAnswers,
 } from "@/lib/event-registration-form";
 
+const answerValueSchema = z.union([z.string(), z.array(z.string())]);
+
 const bodySchema = z.object({
   eventId: z.string().min(1),
-  answers: z.record(z.string(), z.string()).optional(),
+  answers: z.record(z.string(), answerValueSchema).optional(),
 });
 
 export async function POST(request: NextRequest) {

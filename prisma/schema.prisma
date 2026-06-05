@@ -119,7 +119,9 @@ model SocietyEvent {
   href      String?
   badge     String?
 
-  /// JSON array of field definitions for the public registration modal (see lib/event-registration-form.ts).
+  /// JSON array of field definitions for the public registration form (see lib/event-registration-form.ts).
+  /// Each field: { id, label, type, required?, options?, description?, sortOrder? }
+  /// Types: short_text, long_text, email, tel, number, date, dropdown, radio, checkbox, multi_select
   registrationFormFields Json?
 
   mediaId String?
@@ -140,7 +142,7 @@ model EventRegistration {
   id          String   @id @default(cuid())
   eventId     String
   event       SocietyEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  /// Answers keyed by field `id` from registrationFormFields.
+  /// Answers keyed by field `id` from registrationFormFields (string or string[] for multi-select fields).
   responses   Json
   /// Short line for inbox lists (e.g. name · email).
   summaryLine String?

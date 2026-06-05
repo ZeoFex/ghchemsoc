@@ -53,9 +53,35 @@ export function loadPaystackInline(): Promise<void> {
   return scriptPromise;
 }
 
+const PAYSTACK_OVERLAY_STYLE_ID = "gcs-paystack-overlay-style";
+
+/** Lighter Paystack iframe backdrop — same-origin overlay only (iframe content is Paystack-controlled). */
+export function applyPaystackOverlayStyles(): void {
+  if (typeof document === "undefined") return;
+  if (document.getElementById(PAYSTACK_OVERLAY_STYLE_ID)) return;
+
+  const style = document.createElement("style");
+  style.id = PAYSTACK_OVERLAY_STYLE_ID;
+  style.textContent = `
+    #paystack-checkout-background,
+    .paystack-checkout-background {
+      background: rgba(255, 255, 255, 0.62) !important;
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
+    }
+    #paystack-checkout-iframe,
+    .paystack-checkout-iframe {
+      border-radius: 1rem !important;
+      box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.18) !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 export function openPaystackCheckout(options: PaystackPopOptions): PaystackPopHandler {
   if (!window.PaystackPop) {
     throw new Error("Paystack is not loaded yet.");
   }
+  applyPaystackOverlayStyles();
   return window.PaystackPop.setup(options);
 }

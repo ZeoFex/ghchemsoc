@@ -175,6 +175,13 @@ export function MembershipRegistrationForm() {
               });
               return;
             }
+            if (res.resumed) {
+              gooeyToast.success("Continuing your application", {
+                description: "Your details were saved. Complete payment to finish.",
+                preset: "smooth",
+                spring: false,
+              });
+            }
             setCheckout({
               applicationId: res.applicationId,
               amountGhs: res.amountGhs,

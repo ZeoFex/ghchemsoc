@@ -3,12 +3,19 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { cmsCredentials, CMS_UNAUTHORIZED_MESSAGE } from "@/lib/cms-fetch";
-import type { RegistrationFieldDef } from "@/lib/event-registration-form";
-import { createEmptyRegistrationField, parseRegistrationFormFields } from "@/lib/event-registration-form";
+import type { RegistrationAnswerValue, RegistrationFieldDef } from "@/lib/event-registration-form";
+import {
+  cleanRegistrationFormFields,
+  createEmptyRegistrationField,
+  parseRegistrationFormFields,
+  registrationsToCsv,
+  validateRegistrationFormFields,
+} from "@/lib/event-registration-form";
 import type { Prisma } from "@prisma/client";
-import { CmsButton, CmsCard, CmsFieldLabel, CmsInput } from "@/components/cms/cms-ui";
+import { CmsButton, CmsCard } from "@/components/cms/cms-ui";
 import { CmsSectionTitle } from "@/components/cms/cms-section-title";
-import { ArrowLeft, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { EventRegistrationFormBuilder } from "@/components/cms/event-registration-form-builder";
+import { ArrowLeft, ChevronDown, ChevronUp, Download, Loader2 } from "lucide-react";
 import { handleCmsResponse } from "@/lib/cms-toast";
 import { refreshCmsNotifications } from "@/components/cms/cms-nav-badges";
 
@@ -18,6 +25,7 @@ type RegRow = {
   read: boolean;
   summaryLine: string | null;
   lines: { label: string; value: string }[];
+  rawResponses: Record<string, RegistrationAnswerValue>;
 };
 
 export function EventRegistrationsClient({ eventId }: { eventId: string }) {
@@ -55,14 +63,13 @@ export function EventRegistrationsClient({ eventId }: { eventId: string }) {
   async function saveFormDefinition() {
     setSavingFields(true);
     setErr(null);
-    const cleaned = fields
-      .map((f) => ({
-        ...f,
-        id: f.id.trim() || `field_${Math.random().toString(36).slice(2, 9)}`,
-        label: f.label.trim(),
-        options: f.type === "select" ? (f.options ?? []).map((o) => o.trim()).filter(Boolean) : undefined,
-      }))
-      .filter((f) => f.label.length > 0);
+    const cleaned = cleanRegistrationFormFields(fields);
+    const validationErr = validateRegistrationFormFields(cleaned);
+    if (validationErr) {
+      setErr(validationErr);
+      setSavingFields(false);
+      return;
+    }
     const res = await fetch(`/api/cms/society-events/${eventId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -74,6 +81,21 @@ export function EventRegistrationsClient({ eventId }: { eventId: string }) {
       setFields(cleaned.length ? cleaned : [createEmptyRegistrationField()]);
       await load();
     }
+  }
+
+  function exportCsv() {
+    const formFields = parseRegistrationFormFields(fields as unknown as Prisma.JsonValue);
+    const csv = registrationsToCsv(
+      formFields,
+      regs.map((r) => ({ createdAt: r.createdAt, answers: r.rawResponses }))
+    );
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "event"}-registrations.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   async function toggleRead(registrationId: string, read: boolean) {
@@ -108,8 +130,7 @@ export function EventRegistrationsClient({ eventId }: { eventId: string }) {
         <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-gcs-primary">Registrations</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-gcs-foreground md:text-3xl">{title}</h1>
         <p className="mt-2 text-sm text-gcs-muted-text">
-          Define the fields visitors see when they tap <strong className="text-gcs-foreground">Register here</strong> on the public event page. All
-          submissions also appear in{" "}
+          Design a custom registration form (like Google Forms) for this event. Submissions also appear in{" "}
           <Link href="/cms/registration-inbox" className="font-medium text-gcs-primary hover:underline">
             Registration inbox
           </Link>
@@ -119,89 +140,15 @@ export function EventRegistrationsClient({ eventId }: { eventId: string }) {
       {err ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">{err}</p> : null}
 
       <CmsCard className="p-8">
-        <CmsSectionTitle>Registration form fields</CmsSectionTitle>
+        <CmsSectionTitle>Registration form builder</CmsSectionTitle>
         <p className="mt-2 text-sm text-gcs-muted-text">
-          Use stable field IDs (e.g. <code className="rounded bg-neutral-100 px-1">full_name</code>) — they are stored with each answer. Add options for
-          select fields (one per line in the options box).
+          Add fields, reorder them, and choose types (short answer, paragraph, email, dropdown, radio, checkboxes, and more).
+          Use stable field IDs — they are stored with each answer.
         </p>
-        <ul className="mt-6 space-y-4">
-          {fields.map((f, i) => (
-            <li key={f.id} className="rounded-xl border border-gcs-border/70 bg-white p-4">
-              <div className="grid gap-3 md:grid-cols-2">
-                <label>
-                  <CmsFieldLabel>Field id</CmsFieldLabel>
-                  <CmsInput value={f.id} onChange={(e) => setFields((rows) => rows.map((x, j) => (j === i ? { ...x, id: e.target.value } : x)))} />
-                </label>
-                <label>
-                  <CmsFieldLabel>Label</CmsFieldLabel>
-                  <CmsInput value={f.label} onChange={(e) => setFields((rows) => rows.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))} />
-                </label>
-                <label>
-                  <CmsFieldLabel>Type</CmsFieldLabel>
-                  <select
-                    className="mt-1 w-full rounded-xl border border-gcs-border bg-white px-3 py-2 text-sm"
-                    value={f.type}
-                    onChange={(e) =>
-                      setFields((rows) =>
-                        rows.map((x, j) =>
-                          j === i
-                            ? {
-                                ...x,
-                                type: e.target.value as RegistrationFieldDef["type"],
-                                options: e.target.value === "select" ? x.options?.length ? x.options : ["Student", "Professional"] : undefined,
-                              }
-                            : x
-                        )
-                      )
-                    }
-                  >
-                    <option value="text">Text</option>
-                    <option value="email">Email</option>
-                    <option value="tel">Phone</option>
-                    <option value="textarea">Long text</option>
-                    <option value="select">Select</option>
-                  </select>
-                </label>
-                <label className="flex items-center gap-2 pt-7 text-sm font-medium text-gcs-foreground">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(f.required)}
-                    onChange={(e) => setFields((rows) => rows.map((x, j) => (j === i ? { ...x, required: e.target.checked } : x)))}
-                  />
-                  Required
-                </label>
-                {f.type === "select" ? (
-                  <label className="md:col-span-2">
-                    <CmsFieldLabel>Options (one per line)</CmsFieldLabel>
-                    <textarea
-                      className="mt-1 w-full rounded-xl border border-gcs-border bg-white px-3 py-2 text-sm"
-                      rows={4}
-                      value={(f.options ?? []).join("\n")}
-                      onChange={(e) =>
-                        setFields((rows) =>
-                          rows.map((x, j) => (j === i ? { ...x, options: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) } : x))
-                        )
-                      }
-                    />
-                  </label>
-                ) : null}
-              </div>
-              <div className="mt-3 flex justify-end">
-                <button
-                  type="button"
-                  className="text-sm font-medium text-red-700 hover:underline"
-                  onClick={() => setFields((rows) => rows.filter((_, j) => j !== i))}
-                >
-                  Remove field
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <CmsButton type="button" variant="ghost" onClick={() => setFields((rows) => [...rows, createEmptyRegistrationField()])}>
-            Add field
-          </CmsButton>
+        <div className="mt-6">
+          <EventRegistrationFormBuilder fields={fields} onChange={setFields} />
+        </div>
+        <div className="mt-4">
           <CmsButton type="button" onClick={() => void saveFormDefinition()} disabled={savingFields}>
             {savingFields ? "Saving…" : "Save form"}
           </CmsButton>
@@ -209,7 +156,15 @@ export function EventRegistrationsClient({ eventId }: { eventId: string }) {
       </CmsCard>
 
       <CmsCard className="p-8">
-        <CmsSectionTitle>Submissions ({regs.length})</CmsSectionTitle>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <CmsSectionTitle>Submissions ({regs.length})</CmsSectionTitle>
+          {regs.length > 0 ? (
+            <CmsButton type="button" variant="ghost" onClick={exportCsv}>
+              <Download className="mr-2 h-4 w-4" aria-hidden />
+              Export CSV
+            </CmsButton>
+          ) : null}
+        </div>
         {regs.length === 0 ? (
           <p className="mt-4 text-sm text-gcs-muted-text">No registrations yet.</p>
         ) : (
