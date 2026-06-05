@@ -7,9 +7,22 @@ export type MembershipEmailCheckResult = {
   available: boolean;
   message?: string;
   status?: MembershipApplicationStatus;
+  /** True when the applicant may re-submit the form and continue to payment. */
+  resumable?: boolean;
+  applicationId?: string;
 };
 
-function statusMessage(status: MembershipApplicationStatus, memberId: string | null): string {
+/** Statuses where the public form may update the existing row and retry payment. */
+export const RESUMABLE_MEMBERSHIP_STATUSES: MembershipApplicationStatus[] = ["pending_payment"];
+
+export function isResumableMembershipStatus(status: MembershipApplicationStatus): boolean {
+  return RESUMABLE_MEMBERSHIP_STATUSES.includes(status);
+}
+
+export function membershipEmailBlockMessage(
+  status: MembershipApplicationStatus,
+  memberId: string | null
+): string {
   switch (status) {
     case "approved":
       return memberId
@@ -24,6 +37,10 @@ function statusMessage(status: MembershipApplicationStatus, memberId: string | n
     default:
       return "This email is already associated with a membership application.";
   }
+}
+
+function statusMessage(status: MembershipApplicationStatus, memberId: string | null): string {
+  return membershipEmailBlockMessage(status, memberId);
 }
 
 async function queryActiveMembershipByEmail(email: string): Promise<MembershipApplication | null> {
@@ -72,6 +89,15 @@ export async function checkMembershipEmailAvailable(
     const existing = await findActiveMembershipByEmail(email);
     if (!existing) {
       return { available: true };
+    }
+
+    if (isResumableMembershipStatus(existing.status)) {
+      return {
+        available: true,
+        resumable: true,
+        status: existing.status,
+        applicationId: existing.id,
+      };
     }
 
     return {
