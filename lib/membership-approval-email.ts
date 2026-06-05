@@ -1,4 +1,4 @@
-import { sendEmail, isValidEmail } from "@/lib/send-email";
+import { sendEmail, isValidEmail, type SendEmailMode } from "@/lib/send-email";
 
 export function buildMemberLoginUrl(baseUrl: string, memberId: string, email: string): string {
   const params = new URLSearchParams({
@@ -83,7 +83,7 @@ export async function sendMembershipApprovalEmail(params: {
   memberId: string;
   applicationId: string;
 }): Promise<
-  | { sent: true; mode: "resend" | "logged"; preview: MembershipApprovalEmailContent }
+  | { sent: true; mode: SendEmailMode; preview: MembershipApprovalEmailContent }
   | { sent: false; error: string; preview?: MembershipApprovalEmailContent }
 > {
   if (!isValidEmail(params.email)) {
