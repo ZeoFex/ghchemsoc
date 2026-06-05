@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
 import { formatZodError, prismaCmsErrorMessage } from "@/lib/cms-api-errors";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import { serializeSocietyResource } from "@/lib/society-resources-cms";
 
@@ -80,6 +81,7 @@ export async function POST(request: NextRequest) {
         include: { media: true },
       });
     });
+    revalidateCmsContent("resources");
     return NextResponse.json(serializeSocietyResource(row));
   } catch (error) {
     console.error("[cms/society-resources POST]", error);

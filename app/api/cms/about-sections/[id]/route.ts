@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import { deleteCloudinaryAsset } from "@/lib/cloudinary-server";
 import type { AboutSection, Media } from "@prisma/client";
@@ -124,5 +125,6 @@ export async function DELETE(request: NextRequest, ctx: { params: Promise<{ id: 
       /* ignore */
     }
   }
+  revalidateCmsContent("about");
   return NextResponse.json({ ok: true });
 }

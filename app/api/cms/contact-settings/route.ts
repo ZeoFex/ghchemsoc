@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 
 const cardSchema = z.object({
@@ -80,6 +81,7 @@ export async function PATCH(request: NextRequest) {
     },
   });
 
+  revalidateCmsContent(["contact", "home"]);
   return NextResponse.json({
     id: row.id,
     eyebrow: row.eyebrow,

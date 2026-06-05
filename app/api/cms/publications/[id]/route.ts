@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import { deleteCloudinaryAsset } from "@/lib/cloudinary-server";
 import { syncPublicationArticles } from "@/lib/publications-sync-articles";
@@ -125,6 +126,7 @@ export async function PATCH(request: NextRequest, ctx: { params: Promise<{ id: s
     });
   });
 
+  revalidateCmsContent("publications");
   return NextResponse.json(serializePublicationCms(row as PublicationWithRelations));
 }
 
@@ -155,5 +157,6 @@ export async function DELETE(request: NextRequest, ctx: { params: Promise<{ id: 
       /* ignore */
     }
   }
+  revalidateCmsContent("publications");
   return NextResponse.json({ ok: true });
 }

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
 import { formatZodError, prismaCmsErrorMessage } from "@/lib/cms-api-errors";
 import { excerptFromHtml, resolveNewsSlugBase, sanitizeNewsHtml } from "@/lib/news-content";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import { deleteCloudinaryAsset } from "@/lib/cloudinary-server";
 import type { NewsItem, Media } from "@prisma/client";
@@ -137,6 +138,7 @@ export async function PATCH(request: NextRequest, ctx: { params: Promise<{ id: s
       });
     });
 
+    revalidateCmsContent("news");
     return NextResponse.json(serialize(row));
   } catch (error) {
     console.error("[cms/news-items PATCH]", error);
@@ -173,6 +175,7 @@ export async function DELETE(request: NextRequest, ctx: { params: Promise<{ id: 
         /* ignore */
       }
     }
+    revalidateCmsContent("news");
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[cms/news-items DELETE]", error);

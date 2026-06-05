@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
 import { prismaCmsErrorMessage } from "@/lib/cms-api-errors";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import type { Executive, Media } from "@prisma/client";
 
@@ -86,6 +87,7 @@ export async function POST(request: NextRequest) {
         include: { media: true },
       });
     });
+    revalidateCmsContent("executives");
     return NextResponse.json(serialize(row));
   } catch (error) {
     console.error("[cms/executives POST]", error);

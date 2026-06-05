@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import { normalizePublicationArticles } from "@/lib/publication-format";
 import { syncPublicationArticles } from "@/lib/publications-sync-articles";
@@ -116,5 +117,6 @@ export async function POST(request: NextRequest) {
     });
   });
 
+  revalidateCmsContent("publications");
   return NextResponse.json(serializePublicationCms(row as PublicationWithRelations));
 }

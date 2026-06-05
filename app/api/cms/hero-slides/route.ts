@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { assertAdmin } from "@/lib/admin-auth";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { heroSlideDbData, heroSlideInputSchema } from "@/lib/hero-slide-schema";
 import { prisma } from "@/lib/prisma";
 
@@ -95,5 +96,6 @@ export async function POST(request: NextRequest) {
     });
   });
 
+  revalidateCmsContent("home");
   return NextResponse.json(serializeSlide(row));
 }

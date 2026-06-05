@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import type { Media, PartnershipCard } from "@prisma/client";
 
@@ -79,5 +80,6 @@ export async function POST(request: NextRequest) {
     });
   });
 
+  revalidateCmsContent("home");
   return NextResponse.json(serialize(row));
 }

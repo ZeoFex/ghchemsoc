@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import { deleteCloudinaryAsset } from "@/lib/cloudinary-server";
 
@@ -95,6 +96,7 @@ export async function PATCH(request: NextRequest, ctx: { params: Promise<{ id: s
     ? row.highlights.filter((x): x is string => typeof x === "string")
     : [];
 
+  revalidateCmsContent("home");
   return NextResponse.json({
     id: row.id,
     sortOrder: row.sortOrder,
@@ -148,5 +150,6 @@ export async function DELETE(request: NextRequest, ctx: { params: Promise<{ id: 
     }
   }
 
+  revalidateCmsContent("home");
   return NextResponse.json({ ok: true });
 }

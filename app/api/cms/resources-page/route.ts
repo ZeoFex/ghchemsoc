@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
 import { prismaCmsErrorMessage } from "@/lib/cms-api-errors";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import { RESOURCES_PAGE_DEFAULTS, RESOURCES_PAGE_ID } from "@/lib/resources-page";
 
@@ -68,6 +69,7 @@ export async function PATCH(request: NextRequest) {
         ...(d.lead !== undefined ? { lead: d.lead } : {}),
       },
     });
+    revalidateCmsContent("resources");
     return NextResponse.json({
       eyebrow: row.eyebrow,
       headline: row.headline,

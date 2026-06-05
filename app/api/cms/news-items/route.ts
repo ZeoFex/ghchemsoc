@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { assertAdmin } from "@/lib/admin-auth";
 import { formatZodError, prismaCmsErrorMessage } from "@/lib/cms-api-errors";
 import { excerptFromHtml, resolveNewsSlugBase, sanitizeNewsHtml } from "@/lib/news-content";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import type { NewsItem, Media } from "@prisma/client";
 
@@ -128,6 +129,7 @@ export async function POST(request: NextRequest) {
       });
     });
 
+    revalidateCmsContent("news");
     return NextResponse.json(serialize(row));
   } catch (error) {
     console.error("[cms/news-items POST]", error);

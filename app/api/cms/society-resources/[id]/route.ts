@@ -3,6 +3,7 @@ import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
 import { formatZodError, prismaCmsErrorMessage } from "@/lib/cms-api-errors";
 import { deleteCloudinaryAsset } from "@/lib/cloudinary-server";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import { deleteResourceUrlAsset, serializeSocietyResource } from "@/lib/society-resources-cms";
 
@@ -120,6 +121,7 @@ export async function PATCH(request: NextRequest, ctx: { params: Promise<{ id: s
       });
     });
 
+    revalidateCmsContent("resources");
     return NextResponse.json(serializeSocietyResource(row));
   } catch (error) {
     console.error("[cms/society-resources PATCH]", error);
@@ -157,6 +159,7 @@ export async function DELETE(request: NextRequest, ctx: { params: Promise<{ id: 
         /* ignore */
       }
     }
+    revalidateCmsContent("resources");
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[cms/society-resources DELETE]", error);

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
 import { prismaCmsErrorMessage } from "@/lib/cms-api-errors";
 import { deleteCloudinaryAsset } from "@/lib/cloudinary-server";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import type { Media, Testimonial } from "@prisma/client";
 
@@ -89,6 +90,7 @@ export async function PATCH(request: NextRequest, ctx: { params: Promise<{ id: s
         include: { media: true },
       });
     });
+    revalidateCmsContent("home");
     return NextResponse.json(serialize(row));
   } catch (error) {
     console.error("[cms/testimonials PATCH]", error);
@@ -120,6 +122,7 @@ export async function DELETE(request: NextRequest, ctx: { params: Promise<{ id: 
       /* ignore */
     }
   }
+  revalidateCmsContent("home");
   return NextResponse.json({ ok: true });
 }
 

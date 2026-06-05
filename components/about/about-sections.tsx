@@ -71,8 +71,8 @@ function ImageCard({ s, featured }: { s: AboutSection; featured?: boolean }) {
           reverseDesktop ? "md:order-2 md:border-l" : "md:order-1 md:border-r"
         )}
       >
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gcs-muted-text">About</p>
-        <h2 className="mt-3 text-xl font-semibold tracking-tight text-gcs-foreground sm:text-2xl">{s.title}</h2>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gcs-primary/80">Section</p>
+        <h2 className="gcs-topic-title mt-3">{s.title}</h2>
         {s.subtitle ? <p className="mt-2 text-sm font-semibold text-gcs-primary sm:text-base">{s.subtitle}</p> : null}
         <SectionBody body={s.body} />
         {showExec ? (
@@ -97,7 +97,7 @@ function TextCard({ s }: { s: AboutSection }) {
       className="rounded-2xl border border-gcs-border/50 bg-gradient-to-br from-blue-50/50 via-white to-white px-6 py-8 shadow-sm ring-1 ring-gcs-border/25 sm:rounded-3xl sm:px-8 sm:py-10"
       data-aos="fade-up"
     >
-      <h2 className="text-lg font-semibold tracking-tight text-gcs-foreground sm:text-xl">{s.title}</h2>
+      <h2 className="gcs-topic-title">{s.title}</h2>
       {s.subtitle ? <p className="mt-1 text-sm font-medium text-gcs-primary sm:text-base">{s.subtitle}</p> : null}
       <SectionBody body={s.body} />
       {showExec ? (

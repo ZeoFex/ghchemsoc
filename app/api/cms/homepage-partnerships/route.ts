@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import {
   HOMEPAGE_PARTNERSHIPS_ID,
@@ -87,5 +88,6 @@ export async function PATCH(request: NextRequest) {
     },
   });
 
+  revalidateCmsContent("home");
   return NextResponse.json(serialize(row));
 }

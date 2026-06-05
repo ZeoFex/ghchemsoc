@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
 import { formatZodError, prismaCmsErrorMessage } from "@/lib/cms-api-errors";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma, prismaReady } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { SITE_FOOTER_ID, serializeSiteFooterCms, siteFooterCreateData, type SiteFooterRow } from "@/lib/site-footer";
@@ -189,6 +190,7 @@ export async function PATCH(request: NextRequest) {
       });
     });
 
+    revalidateCmsContent("all");
     return NextResponse.json(serializeSiteFooterCms(row as SiteFooterRow));
   } catch (err) {
     console.error("[site-footer] PATCH failed:", err);

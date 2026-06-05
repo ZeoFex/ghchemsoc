@@ -12,6 +12,9 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
+/** ISR fallback: public pages refresh periodically if on-demand revalidation is missed. */
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Ghana Chemical Society (GCS)",
   description:

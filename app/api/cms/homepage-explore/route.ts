@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
+import { revalidateCmsContent } from "@/lib/cms-revalidate";
 import { prisma } from "@/lib/prisma";
 import type { HomepageExploreSettings, Media } from "@prisma/client";
 import { HOMEPAGE_EXPLORE_ID, homepageExploreCreateData } from "@/lib/homepage-explore";
@@ -175,5 +176,6 @@ export async function PATCH(request: NextRequest) {
     });
   });
 
+  revalidateCmsContent(["home", "about"]);
   return NextResponse.json(serialize(row));
 }
