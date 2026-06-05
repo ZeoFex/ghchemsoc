@@ -8,10 +8,15 @@ import { CmsRichTextEditor } from "@/components/cms/cms-rich-text-editor";
 import { CmsImageUpload } from "@/components/cms/cms-image-upload";
 import { CmsListActions } from "@/components/cms/cms-list-actions";
 import { CmsSectionTitle } from "@/components/cms/cms-section-title";
-import { parseRegistrationFormFields } from "@/lib/event-registration-form";
+import {
+  cleanRegistrationFormFields,
+  createEmptyRegistrationField,
+  parseRegistrationFormFields,
+  validateRegistrationFormFields,
+  type RegistrationFieldDef,
+} from "@/lib/event-registration-form";
 import type { Prisma } from "@prisma/client";
-import type { RegistrationFieldDef } from "@/lib/event-registration-form";
-import { createEmptyRegistrationField } from "@/lib/event-registration-form";
+import { EventRegistrationFormBuilder } from "@/components/cms/event-registration-form-builder";
 import { handleCmsResponse } from "@/lib/cms-toast";
 import { isNewsBodyEmpty } from "@/lib/news-content";
 import { HomepageEventsSpotlightCms } from "@/components/cms/homepage-events-spotlight-cms";
@@ -42,17 +47,6 @@ function toLocalInput(iso: string) {
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function cleanRegistrationFormFieldsForCreate(fields: RegistrationFieldDef[]): RegistrationFieldDef[] {
-  return fields
-    .map((f) => ({
-      ...f,
-      id: f.id.trim() || `field_${Math.random().toString(36).slice(2, 9)}`,
-      label: f.label.trim(),
-      options: f.type === "select" ? (f.options ?? []).map((o) => o.trim()).filter(Boolean) : undefined,
-    }))
-    .filter((f) => f.label.length > 0);
 }
 
 function getEmptyForm() {
@@ -137,12 +131,11 @@ export function EventsCmsClient() {
       setErr("Upload an event image — pasted URLs are not supported here.");
       return;
     }
-    const cleanedFields = cleanRegistrationFormFieldsForCreate(form.registrationFormFields);
-    for (const f of cleanedFields) {
-      if (f.type === "select" && !(f.options?.length)) {
-        setErr('Select fields need at least one option (use "Registration form" below).');
-        return;
-      }
+    const cleanedFields = cleanRegistrationFormFields(form.registrationFormFields);
+    const formValidationErr = validateRegistrationFormFields(cleanedFields);
+    if (formValidationErr) {
+      setErr(formValidationErr);
+      return;
     }
     const payload: Record<string, unknown> = {
       title: form.title,
@@ -476,132 +469,16 @@ export function EventsCmsClient() {
           </div>
           {!editingId && registrationFormExpanded ? (
             <div className="md:col-span-2 rounded-2xl border border-gcs-border/70 bg-neutral-50/80 p-5 md:p-6">
-              <p className="text-sm font-semibold text-slate-900">Registration form fields</p>
+              <p className="text-sm font-semibold text-slate-900">Registration form builder</p>
               <p className="mt-1 text-sm text-slate-600">
-                These are saved with the event when you click <span className="font-medium text-slate-800">Create event</span>. Visitors use{" "}
-                <span className="font-medium text-slate-800">Register here</span> on the public listing and event page.
+                Saved when you click <span className="font-medium text-slate-800">Create event</span>. Visitors use{" "}
+                <span className="font-medium text-slate-800">Register here</span> on the public site.
               </p>
-              <ul className="mt-5 space-y-4">
-                {form.registrationFormFields.map((f, i) => (
-                  <li key={`${f.id}-${i}`} className="rounded-xl border border-gcs-border/70 bg-white p-4">
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <label>
-                        <CmsFieldLabel>Field id</CmsFieldLabel>
-                        <CmsInput
-                          value={f.id}
-                          onChange={(e) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              registrationFormFields: prev.registrationFormFields.map((x, j) =>
-                                j === i ? { ...x, id: e.target.value } : x
-                              ),
-                            }))
-                          }
-                        />
-                      </label>
-                      <label>
-                        <CmsFieldLabel>Label</CmsFieldLabel>
-                        <CmsInput
-                          value={f.label}
-                          onChange={(e) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              registrationFormFields: prev.registrationFormFields.map((x, j) =>
-                                j === i ? { ...x, label: e.target.value } : x
-                              ),
-                            }))
-                          }
-                        />
-                      </label>
-                      <label>
-                        <CmsFieldLabel>Type</CmsFieldLabel>
-                        <select
-                          className="mt-1 w-full rounded-xl border border-gcs-border bg-white px-3 py-2 text-sm"
-                          value={f.type}
-                          onChange={(e) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              registrationFormFields: prev.registrationFormFields.map((x, j) =>
-                                j === i
-                                  ? {
-                                      ...x,
-                                      type: e.target.value as RegistrationFieldDef["type"],
-                                      options:
-                                        e.target.value === "select"
-                                          ? x.options?.length
-                                            ? x.options
-                                            : ["Student", "Professional"]
-                                          : undefined,
-                                    }
-                                  : x
-                              ),
-                            }))
-                          }
-                        >
-                          <option value="text">Text</option>
-                          <option value="email">Email</option>
-                          <option value="tel">Phone</option>
-                          <option value="textarea">Long text</option>
-                          <option value="select">Select</option>
-                        </select>
-                      </label>
-                      <label className="flex items-center gap-2 pt-7 text-sm font-medium text-slate-800">
-                        <input
-                          type="checkbox"
-                          checked={Boolean(f.required)}
-                          onChange={(e) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              registrationFormFields: prev.registrationFormFields.map((x, j) =>
-                                j === i ? { ...x, required: e.target.checked } : x
-                              ),
-                            }))
-                          }
-                        />
-                        Required
-                      </label>
-                      {f.type === "select" ? (
-                        <label className="md:col-span-2">
-                          <CmsFieldLabel>Options (one per line)</CmsFieldLabel>
-                          <textarea
-                            className="mt-1 w-full rounded-xl border border-gcs-border bg-white px-3 py-2 text-sm"
-                            rows={4}
-                            value={(f.options ?? []).join("\n")}
-                            onChange={(e) =>
-                              setForm((prev) => ({
-                                ...prev,
-                                registrationFormFields: prev.registrationFormFields.map((x, j) =>
-                                  j === i
-                                    ? { ...x, options: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) }
-                                    : x
-                                ),
-                              }))
-                            }
-                          />
-                        </label>
-                      ) : null}
-                    </div>
-                    <div className="mt-3 flex justify-end">
-                      <button
-                        type="button"
-                        className="text-sm font-medium text-red-700 hover:underline"
-                        onClick={() =>
-                          setForm((prev) => ({
-                            ...prev,
-                            registrationFormFields: prev.registrationFormFields.filter((_, j) => j !== i),
-                          }))
-                        }
-                      >
-                        Remove field
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-4">
-                <CmsButton type="button" variant="ghost" onClick={() => setForm((f) => ({ ...f, registrationFormFields: [...f.registrationFormFields, createEmptyRegistrationField()] }))}>
-                  Add field
-                </CmsButton>
+              <div className="mt-5">
+                <EventRegistrationFormBuilder
+                  fields={form.registrationFormFields}
+                  onChange={(registrationFormFields) => setForm((f) => ({ ...f, registrationFormFields }))}
+                />
               </div>
             </div>
           ) : null}

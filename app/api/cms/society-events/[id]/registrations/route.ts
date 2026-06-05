@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { parseRegistrationFormFields, registrationRowsForAdmin } from "@/lib/event-registration-form";
+import {
+  parseRegistrationFormFields,
+  registrationRowsForAdmin,
+  type RegistrationAnswerValue,
+} from "@/lib/event-registration-form";
 
 export async function GET(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const denied = await assertAdmin(request);
@@ -25,7 +29,10 @@ export async function GET(request: NextRequest, ctx: { params: Promise<{ id: str
       registrationFormFields: event.registrationFormFields,
     },
     registrations: rows.map((r) => {
-      const answers = (r.responses && typeof r.responses === "object" ? r.responses : {}) as Record<string, string>;
+      const answers = (r.responses && typeof r.responses === "object" ? r.responses : {}) as Record<
+        string,
+        RegistrationAnswerValue
+      >;
       return {
         id: r.id,
         createdAt: r.createdAt.toISOString(),
