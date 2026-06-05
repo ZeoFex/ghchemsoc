@@ -3,12 +3,16 @@
 import { prisma, prismaReady } from "@/lib/prisma";
 import { databaseUnavailableMessage } from "@/lib/db-fallback";
 import { MEMBERSHIP_FEE_GHS } from "@/lib/membership-application";
-import { checkMembershipEmailAvailable } from "@/lib/membership-email-check";
+import {
+    findActiveMembershipByEmail,
+    isResumableMembershipStatus,
+    membershipEmailBlockMessage,
+} from "@/lib/membership-email-check";
 import { processMembershipPhotoFile } from "@/lib/membership-photo";
 import { prismaSaveErrorMessage } from "@/lib/prisma-errors";
 
 export type CreateMembershipApplicationState =
-    | { ok: true; applicationId: string; amountGhs: number }
+    | { ok: true; applicationId: string; amountGhs: number; resumed?: boolean }
     | { ok: false; message: string };
 
 function trim(formData: FormData, key: string): string {
@@ -38,10 +42,6 @@ export async function createMembershipApplication(
         return { ok: false, message: "Enter a valid email address." };
     }
 
-    const emailCheck = await checkMembershipEmailAvailable(email);
-    if (!emailCheck.available) {
-        return { ok: false, message: emailCheck.message ?? "This email is already in use." };
-    }
     if (phone && phone.replace(/\D/g, "").length < 9) {
         return { ok: false, message: "Enter a valid phone number or leave the field blank." };
     }
@@ -75,17 +75,52 @@ export async function createMembershipApplication(
     }
 
     try {
+        const normalizedEmail = email.toLowerCase();
+        const existing = await findActiveMembershipByEmail(normalizedEmail);
+
+        if (existing && !isResumableMembershipStatus(existing.status)) {
+            return {
+                ok: false,
+                message: membershipEmailBlockMessage(existing.status, existing.memberId),
+            };
+        }
+
+        const applicationData = {
+            fullName,
+            email: normalizedEmail,
+            phone: phone || null,
+            institution,
+            jobTitle: jobTitle || null,
+            highestDegree: highestDegree || null,
+            declarationLegalName,
+            declarationDate,
+            ...(photoUrl !== undefined ? { photoUrl: photoUrl ?? null, photoPublicId: photoPublicId ?? null } : {}),
+        };
+
+        if (existing) {
+            const row = await prisma.membershipApplication.update({
+                where: { id: existing.id },
+                data: {
+                    ...applicationData,
+                    status: "pending_payment",
+                    amountGhs: MEMBERSHIP_FEE_GHS,
+                    paymentStatus: "pending",
+                    paymentMethod: null,
+                    paystackReference: null,
+                    payerPhone: null,
+                    paymentNote: null,
+                    paidAt: null,
+                    read: false,
+                },
+            });
+
+            return { ok: true, applicationId: row.id, amountGhs: row.amountGhs, resumed: true };
+        }
+
         const row = await prisma.membershipApplication.create({
             data: {
+                ...applicationData,
                 status: "pending_payment",
-                fullName,
-                email: email.toLowerCase(),
-                phone: phone || null,
-                institution,
-                jobTitle: jobTitle || null,
-                highestDegree: highestDegree || null,
-                declarationLegalName,
-                declarationDate,
                 photoUrl: photoUrl ?? null,
                 photoPublicId: photoPublicId ?? null,
                 amountGhs: MEMBERSHIP_FEE_GHS,

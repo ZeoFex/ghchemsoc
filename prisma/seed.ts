@@ -9,18 +9,34 @@ import { Prisma } from "@prisma/client";
 import { MEMBER_BENEFIT_DEFAULTS, memberPortalCreateData } from "../lib/member-portal";
 
 const DEFAULT_EVENT_REGISTRATION_FORM: Prisma.InputJsonValue = [
-  { id: "full_name", label: "Full name", type: "text", required: true },
-  { id: "email", label: "Email", type: "email", required: true },
-  { id: "phone", label: "Phone", type: "tel", required: false },
-  { id: "institution", label: "Institution / affiliation", type: "text", required: true },
+  { id: "full_name", label: "Full name", type: "short_text", required: true, sortOrder: 0 },
+  { id: "email", label: "Email", type: "email", required: true, sortOrder: 1 },
+  { id: "phone", label: "Phone", type: "tel", required: false, sortOrder: 2 },
+  { id: "institution", label: "Institution / affiliation", type: "short_text", required: true, sortOrder: 3 },
   {
     id: "category",
     label: "Attendee category",
-    type: "select",
+    type: "radio",
     required: true,
+    sortOrder: 4,
     options: ["Student", "Professional", "Industry partner", "Other"],
   },
-  { id: "notes", label: "Dietary or accessibility notes", type: "textarea", required: false },
+  {
+    id: "interests",
+    label: "Topics of interest",
+    type: "checkbox",
+    required: false,
+    sortOrder: 5,
+    description: "Select all that apply",
+    options: ["Green chemistry", "Teaching labs", "Industry partnerships", "Student networking"],
+  },
+  {
+    id: "notes",
+    label: "Dietary or accessibility notes",
+    type: "long_text",
+    required: false,
+    sortOrder: 6,
+  },
 ];
 
 async function main() {
