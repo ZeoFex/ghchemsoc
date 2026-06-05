@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
-import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_SHORT_NAME, absoluteUrl } from "@/lib/seo";
+import { DEFAULT_DESCRIPTION, SITE_BRAND_SLUG, SITE_NAME, SITE_SHORT_NAME, absoluteUrl } from "@/lib/seo";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: SITE_NAME,
-    short_name: SITE_SHORT_NAME,
+    name: `${SITE_NAME} (${SITE_BRAND_SLUG})`,
+    short_name: SITE_BRAND_SLUG,
     description: DEFAULT_DESCRIPTION,
     start_url: "/",
     display: "standalone",

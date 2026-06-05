@@ -19,13 +19,22 @@ const STATIC_ROUTES: { path: string; changeFrequency: MetadataRoute.Sitemap[numb
   { path: "/executives", changeFrequency: "monthly", priority: 0.75 },
 ];
 
+async function safeSitemapQuery<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    console.error(`[sitemap] ${label} failed`, error);
+    return fallback;
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getBaseUrl();
   const [news, events, publications, executives] = await Promise.all([
-    getPublishedNewsItems(),
-    getPublishedSocietyEvents(),
-    getPublishedPublications(),
-    getPublishedExecutives(),
+    safeSitemapQuery("news", getPublishedNewsItems, []),
+    safeSitemapQuery("events", getPublishedSocietyEvents, []),
+    safeSitemapQuery("publications", getPublishedPublications, []),
+    safeSitemapQuery("executives", getPublishedExecutives, []),
   ]);
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((route) => ({

@@ -26,7 +26,7 @@ export const SITE_FOOTER_DEFAULTS = {
   ] satisfies FooterNavLink[],
   socialLinks: [
     { platform: "linkedin", href: "https://www.linkedin.com", label: "LinkedIn" },
-    { platform: "globe", href: "https://ghanachemicalsociety.org", label: "Website" },
+    { platform: "globe", href: "https://www.ghchemsoc.org", label: "Website" },
   ] satisfies FooterSocialLink[],
   leftImageUrl:
     "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=600&auto=format&fit=crop",

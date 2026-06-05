@@ -12,10 +12,12 @@ import { getHomepageExploreForPublic, getPublishedAboutSections, getPublishedExe
 import type { HomepageExplorePublic } from "@/lib/homepage-explore";
 import { ArrowDown, ArrowUpRight, BookOpen, MapPin, Users } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "About | Ghana Chemical Society",
-  description: "Mission, programmes, and values of the Ghana Chemical Society.",
-};
+export const metadata: Metadata = buildMetadata({
+  title: "About",
+  description:
+    "Learn about the Ghana Chemical Society (ghchemsoc, GCS)—our mission, programmes, leadership, and values advancing chemistry in Ghana.",
+  path: "/about",
+});
 
 function MissionIntro({ mission }: { mission: HomepageExplorePublic }) {
   return (
