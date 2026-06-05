@@ -24,7 +24,7 @@ function SectionBody({ body }: { body: string }) {
   if (!blocks.length) return null;
 
   return (
-    <div className="mt-4 space-y-3 text-sm leading-relaxed text-gcs-muted-text sm:text-[0.95rem]">
+    <div className="gcs-body mt-5 space-y-4">
       {blocks.map((block, j) => (
         <p key={j}>{block.trim()}</p>
       ))}
@@ -32,85 +32,112 @@ function SectionBody({ body }: { body: string }) {
   );
 }
 
-function ImageCard({ s, featured }: { s: AboutSection; featured?: boolean }) {
-  const showExec = sectionLinksToExecutives(s);
-  const reverseDesktop = s.layout === "reverse";
+function ExecutivesLink() {
+  return (
+    <Link
+      href="/executives"
+      className="mt-7 inline-flex items-center gap-1.5 text-sm font-semibold text-gcs-primary transition-colors hover:text-gcs-primary-hover"
+    >
+      View leadership
+      <ArrowUpRight className="h-4 w-4" />
+    </Link>
+  );
+}
+
+function SectionImage({ s, className }: { s: AboutSection; className?: string }) {
+  if (!s.media) return null;
 
   return (
-    <article
+    <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-gcs-border/50 bg-white shadow-[0_12px_40px_-18px_rgba(29,78,216,0.12)] ring-1 ring-gcs-border/30 sm:rounded-3xl",
-        // Split layout + bigger cards on desktop
-        "md:grid md:grid-cols-2 md:items-stretch",
-        featured ? "md:col-span-2" : ""
+        "relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50/90 via-slate-50 to-slate-100 shadow-[0_12px_36px_-16px_rgba(29,78,216,0.22)] ring-1 ring-gcs-border/40 sm:rounded-[1.35rem]",
+        className
       )}
-      data-aos="fade-up"
     >
-      <div
-        className={cn(
-          "relative w-full overflow-hidden bg-slate-100",
-          // Mobile: image on top; Desktop: split panel
-          "aspect-[16/10] sm:aspect-[2/1] md:aspect-auto md:min-h-[340px]",
-          reverseDesktop ? "md:order-1" : "md:order-2"
-        )}
-      >
+      <div className="relative aspect-[4/3] w-full">
         <Image
-          src={s.media!.url}
-          alt={s.media!.alt ?? s.title}
+          src={s.media.url}
+          alt={s.media.alt ?? s.title}
           fill
           className="object-cover object-center"
-          sizes={featured ? "(max-width: 768px) 100vw, 1100px" : "(max-width: 768px) 100vw, 540px"}
+          sizes="(max-width: 1024px) 100vw, 420px"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-transparent md:bg-gradient-to-l md:from-slate-950/15 md:via-transparent md:to-transparent" />
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent"
+          aria-hidden
+        />
       </div>
+    </div>
+  );
+}
 
-      <div
-        className={cn(
-          "border-t border-gcs-border/40 px-5 py-7 sm:px-7 sm:py-8",
-          "md:border-t-0 md:border-gcs-border/40 md:px-10 md:py-12",
-          reverseDesktop ? "md:order-2 md:border-l" : "md:order-1 md:border-r"
-        )}
-      >
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gcs-primary/80">Section</p>
-        <h2 className="gcs-topic-title mt-3">{s.title}</h2>
-        {s.subtitle ? <p className="mt-2 text-sm font-semibold text-gcs-primary sm:text-base">{s.subtitle}</p> : null}
-        <SectionBody body={s.body} />
-        {showExec ? (
-          <Link
-            href="/executives"
-            className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-gcs-primary hover:text-gcs-primary-hover"
-          >
-            View leadership
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
-        ) : null}
+function SectionCopy({ s }: { s: AboutSection }) {
+  const showExec = sectionLinksToExecutives(s);
+
+  return (
+    <div className="min-w-0 flex-1">
+      {s.subtitle ? (
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gcs-primary">{s.subtitle}</p>
+      ) : null}
+      <h2 className={cn("gcs-topic-title", s.subtitle ? "mt-3" : "")}>{s.title}</h2>
+      <SectionBody body={s.body} />
+      {showExec ? <ExecutivesLink /> : null}
+    </div>
+  );
+}
+
+function TextOnlySection({ s }: { s: AboutSection }) {
+  return (
+    <article
+      className="rounded-2xl border border-gcs-border/50 bg-gradient-to-br from-blue-50/40 via-white to-white px-7 py-9 shadow-[0_10px_32px_-18px_rgba(29,78,216,0.1)] ring-1 ring-gcs-border/25 sm:rounded-3xl sm:px-10 sm:py-11"
+      data-aos="fade-up"
+    >
+      <SectionCopy s={s} />
+    </article>
+  );
+}
+
+function WideImageSection({ s }: { s: AboutSection }) {
+  return (
+    <article className="space-y-8 sm:space-y-10" data-aos="fade-up">
+      <SectionImage s={s} className="w-full" />
+      <div className="rounded-2xl border border-gcs-border/40 bg-white px-7 py-9 shadow-sm ring-1 ring-gcs-border/20 sm:rounded-3xl sm:px-10 sm:py-11">
+        <SectionCopy s={s} />
       </div>
     </article>
   );
 }
 
-function TextCard({ s }: { s: AboutSection }) {
-  const showExec = sectionLinksToExecutives(s);
-
+function SplitImageSection({ s, imageOnLeft }: { s: AboutSection; imageOnLeft: boolean }) {
   return (
     <article
-      className="rounded-2xl border border-gcs-border/50 bg-gradient-to-br from-blue-50/50 via-white to-white px-6 py-8 shadow-sm ring-1 ring-gcs-border/25 sm:rounded-3xl sm:px-8 sm:py-10"
+      className="rounded-2xl border border-gcs-border/50 bg-white px-6 py-8 shadow-[0_12px_40px_-20px_rgba(29,78,216,0.14)] ring-1 ring-gcs-border/30 sm:rounded-3xl sm:px-8 sm:py-10 md:px-10 md:py-12"
       data-aos="fade-up"
     >
-      <h2 className="gcs-topic-title">{s.title}</h2>
-      {s.subtitle ? <p className="mt-1 text-sm font-medium text-gcs-primary sm:text-base">{s.subtitle}</p> : null}
-      <SectionBody body={s.body} />
-      {showExec ? (
-        <Link
-          href="/executives"
-          className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-gcs-primary hover:text-gcs-primary-hover"
-        >
-          View leadership
-          <ArrowUpRight className="h-4 w-4" />
-        </Link>
-      ) : null}
+      <div
+        className={cn(
+          "flex flex-col gap-8 md:gap-10 lg:flex-row lg:items-start lg:gap-12",
+          imageOnLeft ? "lg:flex-row" : "lg:flex-row-reverse"
+        )}
+      >
+        <SectionImage s={s} className="w-full lg:w-[min(44%,26rem)] lg:shrink-0" />
+        <SectionCopy s={s} />
+      </div>
     </article>
   );
+}
+
+function AboutSectionBlock({ s, index }: { s: AboutSection; index: number }) {
+  if (!s.media) {
+    return <TextOnlySection s={s} />;
+  }
+
+  if (s.layout === "wide") {
+    return <WideImageSection s={s} />;
+  }
+
+  const imageOnLeft = s.layout === "reverse" || index % 2 === 1;
+  return <SplitImageSection s={s} imageOnLeft={imageOnLeft} />;
 }
 
 export function AboutSections({ sections }: { sections: AboutSection[] }) {
@@ -122,34 +149,11 @@ export function AboutSections({ sections }: { sections: AboutSection[] }) {
     );
   }
 
-  const withImages = sections.filter((s) => s.media);
-  const withoutImages = sections.filter((s) => !s.media);
-
   return (
-    <div className="space-y-8 md:space-y-10">
-      {withoutImages.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 md:gap-8">
-          {withoutImages.map((s) => (
-            <TextCard key={s.id} s={s} />
-          ))}
-        </div>
-      ) : null}
-
-      {withImages.length > 0 ? (
-        <div className="grid gap-6 md:gap-8">
-          {withImages.map((s, i) => (
-            <ImageCard
-              key={s.id}
-              s={{
-                ...s,
-                // Alternate layout: text-left/image-right, then image-left/text-right
-                layout: s.layout === "wide" ? "wide" : i % 2 === 1 ? "reverse" : s.layout,
-              }}
-              featured={i === 0 || s.layout === "wide"}
-            />
-          ))}
-        </div>
-      ) : null}
+    <div className="space-y-10 md:space-y-14">
+      {sections.map((s, i) => (
+        <AboutSectionBlock key={s.id} s={s} index={i} />
+      ))}
     </div>
   );
 }
