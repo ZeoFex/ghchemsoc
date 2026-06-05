@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/header";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd, buildMetadata } from "@/lib/seo";
 import { PublicationIssueView } from "@/components/publications/publication-issue-view";
 import { getPublishedPublicationById, getPublishedPublications } from "@/lib/cms-queries";
 import { ArrowLeft } from "lucide-react";
@@ -11,11 +13,19 @@ type PageProps = { params: Promise<{ id: string }> };
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { id } = await props.params;
   const issue = await getPublishedPublicationById(id);
-  if (!issue) return { title: "Issue not found" };
-  return {
-    title: `${issue.title} | Ghana Chemical Society`,
+  if (!issue) {
+    return buildMetadata({ title: "Issue not found", path: `/publications/${id}`, noIndex: true });
+  }
+  return buildMetadata({
+    title: issue.title,
     description: issue.description.slice(0, 160),
-  };
+    path: `/publications/${id}`,
+    image: issue.media?.url,
+    imageAlt: issue.media?.alt ?? issue.title,
+    publishedTime: issue.publishedAt ?? undefined,
+    type: "article",
+    absoluteTitle: true,
+  });
 }
 
 export default async function PublicationIssuePage(props: PageProps) {
@@ -31,6 +41,13 @@ export default async function PublicationIssuePage(props: PageProps) {
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Publications", path: "/publications" },
+          { name: issue.title },
+        ])}
+      />
       <Header />
       <main className="min-h-screen bg-white pb-24 pt-28 md:pb-32 md:pt-32">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 md:px-12">

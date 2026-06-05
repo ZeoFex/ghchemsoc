@@ -3,12 +3,15 @@ import { Header } from "@/components/layout/header";
 import { MembershipPendingView } from "@/components/membership/membership-pending-view";
 import { membershipPaymentMethodLabel } from "@/lib/membership-payment-methods";
 import { MEMBERSHIP_FEE_GHS } from "@/lib/membership-fee";
+import { buildMetadata } from "@/lib/seo";
 import type { MembershipPaymentMethod } from "@prisma/client";
 
-export const metadata: Metadata = {
-  title: "Application pending | Ghana Chemical Society",
+export const metadata: Metadata = buildMetadata({
+  title: "Application pending",
   description: "Your membership payment is being reviewed by the GCS secretariat.",
-};
+  path: "/membership/pending",
+  noIndex: true,
+});
 
 type Props = {
   searchParams: Promise<{

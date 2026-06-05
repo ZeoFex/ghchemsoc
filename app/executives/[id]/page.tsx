@@ -5,20 +5,51 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, UserRound } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { ContactFooter } from "@/components/home/contact-footer";
+import { JsonLd } from "@/components/seo/json-ld";
 import { getPublishedExecutiveById } from "@/lib/cms-queries";
+import { breadcrumbJsonLd, buildMetadata, personJsonLd } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Executive profile | Ghana Chemical Society",
-  description: "Executive leadership profile for the Ghana Chemical Society.",
-};
+type PageProps = { params: Promise<{ id: string }> };
 
-export default async function ExecutiveProfilePage({ params }: { params: Promise<{ id: string }> }) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const exec = await getPublishedExecutiveById(id);
+  if (!exec) {
+    return buildMetadata({ title: "Executive not found", path: `/executives/${id}`, noIndex: true });
+  }
+  return buildMetadata({
+    title: exec.name,
+    description: exec.bio?.trim() || `${exec.role} at the Ghana Chemical Society.`,
+    path: `/executives/${id}`,
+    image: exec.media?.url,
+    imageAlt: exec.media?.alt ?? exec.name,
+    absoluteTitle: true,
+  });
+}
+
+export default async function ExecutiveProfilePage({ params }: PageProps) {
   const { id } = await params;
   const exec = await getPublishedExecutiveById(id);
   if (!exec) notFound();
 
   return (
     <>
+      <JsonLd
+        data={[
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Executives", path: "/executives" },
+            { name: exec.name },
+          ]),
+          personJsonLd({
+            name: exec.name,
+            role: exec.role,
+            path: `/executives/${id}`,
+            image: exec.media?.url,
+            bio: exec.bio,
+          }),
+        ]}
+      />
       <Header />
       <main className="min-h-screen bg-white text-gcs-foreground">
         <section className="relative overflow-hidden border-b border-blue-100/70">

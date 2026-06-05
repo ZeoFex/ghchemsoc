@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ContactForm } from "@/components/contact/contact-form";
 import { Header } from "@/components/layout/header";
+import { JsonLd } from "@/components/seo/json-ld";
+import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getContactSettings } from "@/lib/cms-queries";
 import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Contact | Ghana Chemical Society",
+export const metadata: Metadata = buildMetadata({
+  title: "Contact",
   description: "Reach the Ghana Chemical Society secretariat for membership, partnerships, and enquiries.",
-};
+  path: "/contact",
+});
 
 type CardIcon = "phone" | "mail" | "map" | "clock";
 
@@ -67,6 +70,12 @@ export default async function ContactPage() {
 
   return (
     <main className="min-h-screen bg-white text-gcs-foreground" data-aos="fade-up">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Contact", path: "/contact" },
+        ])}
+      />
       <Header />
 
       <section className="border-b border-gcs-border/60 bg-gcs-surface pb-12 pt-28 md:pb-16 md:pt-32">

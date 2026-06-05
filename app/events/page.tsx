@@ -2,16 +2,19 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
+import { JsonLd } from "@/components/seo/json-ld";
+import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getPublishedSocietyEvents } from "@/lib/cms-queries";
 import { formatEventDates } from "@/lib/event-format";
 import { eventRegisterPath, showRegisterHereOnListing } from "@/lib/event-listing-cta";
 import { ArrowUpRight, Calendar, Clock, MapPin, Sparkles } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Conferences & events | Ghana Chemical Society",
+export const metadata: Metadata = buildMetadata({
+  title: "Conferences & events",
   description:
     "GCS symposia, workshops, and member gatherings—dates, venues, and how to take part.",
-};
+  path: "/events",
+});
 
 export default async function EventsPage() {
   const rows = await getPublishedSocietyEvents();
@@ -20,6 +23,12 @@ export default async function EventsPage() {
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Events", path: "/events" },
+        ])}
+      />
       <Header />
       <main className="relative min-h-screen pb-24 pt-24 md:pb-32 md:pt-28">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-gradient-to-b from-white via-white to-neutral-50/40">

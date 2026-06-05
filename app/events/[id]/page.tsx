@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/header";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd, buildMetadata, eventJsonLd } from "@/lib/seo";
 import { getPublishedSocietyEventById, getPublishedSocietyEvents } from "@/lib/cms-queries";
 import { formatEventDates } from "@/lib/event-format";
 import { EventAboutBody } from "@/components/events/event-about-body";
@@ -33,11 +35,17 @@ function proseParagraphs(body: string | null, excerpt: string) {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { id } = await props.params;
   const event = await getPublishedSocietyEventById(id);
-  if (!event) return { title: "Event not found" };
-  return {
-    title: `${event.title} | Ghana Chemical Society`,
+  if (!event) {
+    return buildMetadata({ title: "Event not found", path: `/events/${id}`, noIndex: true });
+  }
+  return buildMetadata({
+    title: event.title,
     description: event.excerpt,
-  };
+    path: `/events/${id}`,
+    image: event.media?.url,
+    imageAlt: event.media?.alt ?? event.title,
+    absoluteTitle: true,
+  });
 }
 
 export default async function EventDetailPage(props: PageProps) {
@@ -49,6 +57,24 @@ export default async function EventDetailPage(props: PageProps) {
   const related = all.filter((e) => e.id !== event.id).slice(0, 3);
   return (
     <>
+      <JsonLd
+        data={[
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Events", path: "/events" },
+            { name: event.title },
+          ]),
+          eventJsonLd({
+            title: event.title,
+            description: event.excerpt,
+            path: `/events/${id}`,
+            image: event.media?.url,
+            startDate: event.startDate,
+            endDate: event.endDate,
+            location: event.location,
+          }),
+        ]}
+      />
       <Header />
       <main className="relative min-h-screen pb-24 pt-24 md:pb-32 md:pt-28">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-gradient-to-b from-white via-white to-neutral-50/35">

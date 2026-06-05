@@ -2,16 +2,19 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
+import { JsonLd } from "@/components/seo/json-ld";
+import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { PublicationsSidebar } from "@/components/publications/publications-sidebar";
 import { ArrowUpRight, BookOpen } from "lucide-react";
 import { getFeaturedPublication, getPublishedPublications } from "@/lib/cms-queries";
 import { formatPublicationDate } from "@/lib/publication-format";
 import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Research & publications | Ghana Chemical Society",
+export const metadata: Metadata = buildMetadata({
+  title: "Research & publications",
   description: "Journal issues, bulletins, and technical outputs from the Ghana Chemical Society.",
-};
+  path: "/publications",
+});
 
 export default async function PublicationsPage() {
   const [featured, all] = await Promise.all([getFeaturedPublication(), getPublishedPublications()]);
@@ -23,6 +26,12 @@ export default async function PublicationsPage() {
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Publications", path: "/publications" },
+        ])}
+      />
       <Header />
       <main className="min-h-screen bg-gcs-surface pb-24 pt-28 md:pb-32 md:pt-32">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 md:px-12">

@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/header";
+import { JsonLd } from "@/components/seo/json-ld";
+import { articleJsonLd, breadcrumbJsonLd, buildMetadata } from "@/lib/seo";
 import { NewsArticleHtml } from "@/components/news/news-article-html";
 import { NewsArticleSidebar } from "@/components/news/news-article-sidebar";
 import { ArrowLeft } from "lucide-react";
@@ -13,8 +15,19 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getNewsBySlug(slug);
-  if (!post) return { title: "News | Ghana Chemical Society" };
-  return { title: `${post.title} | Ghana Chemical Society`, description: post.excerpt };
+  if (!post) {
+    return buildMetadata({ title: "News not found", path: `/news/${slug}`, noIndex: true });
+  }
+  return buildMetadata({
+    title: post.title,
+    description: post.excerpt,
+    path: `/news/${slug}`,
+    image: post.media?.url,
+    imageAlt: post.media?.alt ?? post.title,
+    type: "article",
+    publishedTime: post.date,
+    absoluteTitle: true,
+  });
 }
 
 function fmt(d: Date) {
@@ -35,6 +48,23 @@ export default async function NewsArticlePage({ params }: Props) {
 
   return (
     <>
+      <JsonLd
+        data={[
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "News", path: "/news" },
+            { name: post.title },
+          ]),
+          articleJsonLd({
+            title: post.title,
+            description: post.excerpt,
+            path: `/news/${slug}`,
+            image: post.media?.url,
+            datePublished: post.date,
+            authorName: post.authorName,
+          }),
+        ]}
+      />
       <Header />
       <main className="min-h-screen bg-white pb-24 pt-28 md:pb-32 md:pt-32">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 md:px-12">

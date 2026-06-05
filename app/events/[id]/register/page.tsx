@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Header } from "@/components/layout/header";
+import { buildMetadata } from "@/lib/seo";
 import { EventRegistrationForm } from "@/components/events/event-registration-form";
 import { getPublishedSocietyEventById } from "@/lib/cms-queries";
 import { formatEventDates } from "@/lib/event-format";
@@ -14,11 +15,16 @@ type PageProps = { params: Promise<{ id: string }> };
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { id } = await props.params;
   const event = await getPublishedSocietyEventById(id);
-  if (!event) return { title: "Registration | Ghana Chemical Society" };
-  return {
-    title: `Register · ${event.title} | Ghana Chemical Society`,
+  if (!event) {
+    return buildMetadata({ title: "Event registration", path: `/events/${id}/register`, noIndex: true });
+  }
+  return buildMetadata({
+    title: `Register · ${event.title}`,
     description: `Register for ${event.title}.`,
-  };
+    path: `/events/${id}/register`,
+    noIndex: true,
+    absoluteTitle: true,
+  });
 }
 
 export default async function EventRegisterPage(props: PageProps) {

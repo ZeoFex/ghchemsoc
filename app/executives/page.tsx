@@ -1,21 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
+import { JsonLd } from "@/components/seo/json-ld";
+import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { ContactFooter } from "@/components/home/contact-footer";
 import { ExecutivesGrid } from "@/components/executives/executives-grid";
 import { getPublishedExecutives } from "@/lib/cms-queries";
 import { ArrowLeft, Users } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Executives | Ghana Chemical Society",
+export const metadata: Metadata = buildMetadata({
+  title: "Executives",
   description: "Officers and executive leadership of the Ghana Chemical Society.",
-};
+  path: "/executives",
+});
 
 export default async function ExecutivesPage() {
   const executives = await getPublishedExecutives();
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Executives", path: "/executives" },
+        ])}
+      />
       <Header />
       <main className="min-h-screen bg-white text-gcs-foreground">
         <section className="relative overflow-hidden border-b border-blue-100/70">

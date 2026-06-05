@@ -4,11 +4,14 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowLeft, FlaskConical } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-    title: "Sign in | Ghana Chemical Society",
+export const metadata: Metadata = buildMetadata({
+    title: "Sign in",
     description: "Sign in to the Ghana Chemical Society member and staff portal.",
-};
+    path: "/login",
+    noIndex: true,
+});
 
 const heroImage =
     "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=2000&auto=format&fit=crop";

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
+import { JsonLd } from "@/components/seo/json-ld";
+import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { ContactFooter } from "@/components/home/contact-footer";
 import { AboutExecutivesTeaser } from "@/components/about/about-executives-teaser";
 import { AboutHeroHeadline } from "@/components/about/about-hero-headline";
@@ -93,6 +95,12 @@ export default async function AboutPage() {
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "About", path: "/about" },
+        ])}
+      />
       <Header />
       <main className="relative min-h-screen overflow-x-hidden bg-white text-gcs-foreground">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[520px]">

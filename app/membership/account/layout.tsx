@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Header } from "@/components/layout/header";
+import { buildMetadata } from "@/lib/seo";
 import { MemberPortalGate } from "@/components/membership/member-portal-gate";
 import {
   MemberPortalMobileStatus,
@@ -8,11 +9,13 @@ import {
 } from "@/components/membership/member-portal-nav";
 import { MemberPortalProvider } from "@/components/membership/member-portal-context";
 
-export const metadata: Metadata = {
-  title: "Member portfolio | Ghana Chemical Society",
+export const metadata: Metadata = buildMetadata({
+  title: "Member portfolio",
   description:
     "Your Ghana Chemical Society member portfolio—benefits, resources, profile, and payment history.",
-};
+  path: "/membership/account",
+  noIndex: true,
+});
 
 export default function MemberAccountLayout({ children }: { children: React.ReactNode }) {
   return (

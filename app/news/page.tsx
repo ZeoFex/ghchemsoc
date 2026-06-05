@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
+import { JsonLd } from "@/components/seo/json-ld";
+import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { ArrowUpRight, Newspaper } from "lucide-react";
 import { getPublishedNewsItems } from "@/lib/cms-queries";
 
-export const metadata: Metadata = {
-  title: "News | Ghana Chemical Society",
+export const metadata: Metadata = buildMetadata({
+  title: "News",
   description: "Society announcements, conferences, and updates for GCS members.",
-};
+  path: "/news",
+});
 
 function fmt(date: string | Date) {
   const d = new Date(date);
@@ -31,6 +34,12 @@ export default async function NewsPage() {
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "News", path: "/news" },
+        ])}
+      />
       <Header />
 
       <main className="min-h-screen bg-white pb-24 pt-28 md:pb-32 md:pt-32">

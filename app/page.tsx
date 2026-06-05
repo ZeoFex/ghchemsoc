@@ -1,4 +1,6 @@
 import { Header } from "@/components/layout/header";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo";
 import { HeroWithCms } from "@/components/home/hero-with-cms";
 import { ExploreSection } from "@/components/home/explore-section";
 import { HomeEventsRow } from "@/components/home/home-events-row";
@@ -21,6 +23,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-white">
+      <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }])} />
       <Header />
       <HeroWithCms />
       <ExploreSection />

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { JsonLd } from "@/components/seo/json-ld";
+import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { MembershipLoginLink } from "@/components/membership/membership-login-link";
 import { MembershipRegistrationForm } from "@/components/membership/membership-registration-form";
 import { formatGhs, MEMBERSHIP_FEE_GHS } from "@/lib/membership-fee";
@@ -17,11 +19,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Membership registration and renewal | Ghana Chemical Society",
+export const metadata: Metadata = buildMetadata({
+  title: "Membership registration and renewal",
   description:
     "Register or renew your Ghana Chemical Society membership—certificate name, affiliation, and declaration.",
-};
+  path: "/membership",
+});
 
 const heroImage =
   "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=2000&q=80";
@@ -70,6 +73,12 @@ function BenefitsList() {
 export default function MembershipPage() {
   return (
     <main className="flex min-h-screen flex-col bg-white lg:flex-row">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Membership", path: "/membership" },
+        ])}
+      />
       {/* Desktop — benefits on image */}
       <div className="relative hidden min-h-screen w-full shrink-0 lg:block lg:w-[min(44%,520px)] lg:max-w-[540px] xl:w-[min(42%,580px)]">
         <Image

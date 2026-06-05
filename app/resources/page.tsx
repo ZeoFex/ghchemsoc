@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
+import { JsonLd } from "@/components/seo/json-ld";
+import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { ResourcesFeatured } from "@/components/resources/resources-featured";
 import { ResourcesGrid } from "@/components/resources/resources-grid";
 import { getPublishedSocietyResources, getResourcesPageForPublic } from "@/lib/cms-queries";
 import { resolveVideoPlayback } from "@/lib/society-resources";
 import { ArrowUpRight, FolderOpen, Library, Sparkles } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Resources | Ghana Chemical Society",
+export const metadata: Metadata = buildMetadata({
+  title: "Resources",
   description:
     "Videos, documents, and reference materials from the Ghana Chemical Society — conference recordings, guides, and useful links.",
-};
+  path: "/resources",
+});
 
 export default async function ResourcesPage() {
   const [page, items] = await Promise.all([getResourcesPageForPublic(), getPublishedSocietyResources()]);
@@ -21,6 +24,12 @@ export default async function ResourcesPage() {
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Resources", path: "/resources" },
+        ])}
+      />
       <Header />
       <main className="relative min-h-screen overflow-x-hidden pb-24 pt-24 md:pb-32 md:pt-28">
         <div className="pointer-events-none absolute inset-0 -z-10">
