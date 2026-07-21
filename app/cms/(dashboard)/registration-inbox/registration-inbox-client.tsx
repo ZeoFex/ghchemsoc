@@ -16,7 +16,7 @@ type Row = {
   createdAt: string;
   read: boolean;
   summaryLine: string | null;
-  lines: { label: string; value: string }[];
+  lines: { label: string; value: string; href?: string }[];
 };
 
 export function RegistrationInboxClient() {
@@ -110,7 +110,21 @@ export function RegistrationInboxClient() {
                         {r.lines.map((line) => (
                           <div key={line.label} className="grid gap-1 sm:grid-cols-[minmax(0,140px)_1fr] sm:gap-4">
                             <dt className="font-semibold text-slate-500">{line.label}</dt>
-                            <dd className="whitespace-pre-wrap text-slate-800">{line.value}</dd>
+                            <dd className="whitespace-pre-wrap text-slate-800">
+                              {line.href ? (
+                                <a
+                                  href={line.href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-medium text-gcs-primary hover:underline"
+                                  download={line.value}
+                                >
+                                  Download {line.value}
+                                </a>
+                              ) : (
+                                line.value
+                              )}
+                            </dd>
                           </div>
                         ))}
                       </dl>

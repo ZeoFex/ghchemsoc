@@ -7,7 +7,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbJsonLd, buildMetadata, eventJsonLd } from "@/lib/seo";
 import { getPublishedSocietyEventById, getPublishedSocietyEvents } from "@/lib/cms-queries";
 import { formatEventDates } from "@/lib/event-format";
-import { EventAboutBody } from "@/components/events/event-about-body";
+import { EventAboutSection } from "@/components/events/event-about-section";
 import { EventRegisterCta } from "@/components/events/event-register-cta";
 import {
   ArrowLeft,
@@ -23,14 +23,6 @@ type PageProps = { params: Promise<{ id: string }> };
 /** Event detail hero — full image visible (no crop). Fits main column beside 340px sidebar. */
 const EVENT_DETAIL_IMAGE_WIDTH_PX = 820;
 const EVENT_DETAIL_IMAGE_HEIGHT_PX = 520;
-
-function proseParagraphs(body: string | null, excerpt: string) {
-  const raw = body?.trim() ? body.trim() : excerpt;
-  return raw
-    .split(/\n\s*\n/)
-    .map((p) => p.trim())
-    .filter(Boolean);
-}
 
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { id } = await props.params;
@@ -152,10 +144,8 @@ export default async function EventDetailPage(props: PageProps) {
                 </div>
               </div>
 
-              <div className="rounded-[1.35rem] border border-gcs-border/50 bg-gcs-surface/90 px-6 py-8 shadow-sm ring-1 ring-gcs-border/15 md:px-9 md:py-10">
-                <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-gcs-muted-text">About this event</h2>
-                <EventAboutBody body={event.body} excerpt={event.excerpt} />
-              </div>
+              {/* Collapsible about — see EventAboutSection */}
+              <EventAboutSection body={event.body} excerpt={event.excerpt} />
             </div>
 
             <aside

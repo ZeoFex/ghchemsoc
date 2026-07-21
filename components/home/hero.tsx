@@ -107,13 +107,17 @@ export function Hero({ cmsSlides }: HeroProps) {
             transition={{ duration: 0.35 }}
             className="flex max-w-5xl flex-col items-center"
           >
-            <p className="mb-4 max-w-2xl text-xs font-semibold uppercase tracking-[0.35em] text-white/90 sm:text-sm">
-              {activeSlide.eyebrow}
-            </p>
+            {activeSlide.eyebrow ? (
+              <p className="mb-4 max-w-2xl text-xs font-semibold uppercase tracking-[0.35em] text-white/90 sm:text-sm">
+                {activeSlide.eyebrow}
+              </p>
+            ) : null}
 
-            <h1 className="mb-6 max-w-5xl break-words text-3xl font-medium leading-[1.08] tracking-tight text-white drop-shadow-sm sm:text-4xl md:text-6xl lg:text-7xl">
-              {activeSlide.title}
-            </h1>
+            {activeSlide.title ? (
+              <h1 className="mb-6 max-w-5xl break-words text-3xl font-medium leading-[1.08] tracking-tight text-white drop-shadow-sm sm:text-4xl md:text-6xl lg:text-7xl">
+                {activeSlide.title}
+              </h1>
+            ) : null}
 
             <p className="mb-8 max-w-2xl px-2 text-base font-light leading-relaxed text-white/95 drop-shadow-sm sm:text-lg md:mb-12 md:text-xl">
               {activeSlide.description}
@@ -130,25 +134,29 @@ export function Hero({ cmsSlides }: HeroProps) {
               className={`h-2 rounded-full transition-all ${
                 i === slideIndex ? "w-8 bg-white" : "w-2 bg-white/40  hover:bg-white/70"
               }`}
-              aria-label={`Show slide ${i + 1}: ${s.title}`}
+              aria-label={`Show slide ${i + 1}${s.title ? `: ${s.title}` : ""}`}
               aria-current={i === slideIndex}
             />
           ))}
         </div>
 
-        <div className="relative z-30 mb-16 md:mb-12">
-          <Link
-            href={activeSlide.ctaHref || MEMBER_LOGIN_PATH}
-            className="group inline-flex animate-float items-center gap-3 rounded-full bg-white p-1.5 pl-6 pr-1.5 shadow-[0_20px_40px_-5px_rgba(15,23,42,0.45)] transition-transform hover:scale-[1.01] md:gap-4 md:p-2 md:pl-8 md:pr-2"
-          >
-            <span className="text-lg font-semibold tracking-tight text-slate-900 md:text-xl">
-              {activeSlide.ctaLabel}
-            </span>
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gcs-primary text-white transition-transform group-hover:rotate-45 group-hover:bg-gcs-primary-hover md:h-12 md:w-12">
-              <ArrowUpRight className="h-5 w-5 md:h-6 md:w-6" />
-            </span>
-          </Link>
-        </div>
+        {activeSlide.ctaLabel ? (
+          <div className="relative z-30 mb-16 md:mb-12">
+            <Link
+              href={activeSlide.ctaHref || MEMBER_LOGIN_PATH}
+              className="group inline-flex animate-float items-center gap-3 rounded-full bg-white p-1.5 pl-6 pr-1.5 shadow-[0_20px_40px_-5px_rgba(15,23,42,0.45)] transition-transform hover:scale-[1.01] md:gap-4 md:p-2 md:pl-8 md:pr-2"
+            >
+              <span className="text-lg font-semibold tracking-tight text-slate-900 md:text-xl">
+                {activeSlide.ctaLabel}
+              </span>
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gcs-primary text-white transition-transform group-hover:rotate-45 group-hover:bg-gcs-primary-hover md:h-12 md:w-12">
+                <ArrowUpRight className="h-5 w-5 md:h-6 md:w-6" />
+              </span>
+            </Link>
+          </div>
+        ) : (
+          <div className="mb-16 md:mb-12" aria-hidden />
+        )}
 
         <div className="absolute bottom-20 right-4 z-20 flex max-w-[min(100%,14rem)] flex-col items-end sm:bottom-6 sm:right-6 md:bottom-12 md:right-12 md:max-w-none">
           <AnimatePresence mode="wait">

@@ -7,7 +7,15 @@ import {
   validateRegistrationAnswers,
 } from "@/lib/event-registration-form";
 
-const answerValueSchema = z.union([z.string(), z.array(z.string())]);
+const fileAnswerSchema = z.object({
+  url: z.string().url(),
+  fileName: z.string().min(1).max(200),
+  publicId: z.string().optional(),
+  mime: z.string().optional(),
+  bytes: z.number().int().nonnegative().optional(),
+});
+
+const answerValueSchema = z.union([z.string(), z.array(z.string()), fileAnswerSchema]);
 
 const bodySchema = z.object({
   eventId: z.string().min(1),

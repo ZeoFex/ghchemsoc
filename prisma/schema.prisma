@@ -120,8 +120,8 @@ model SocietyEvent {
   badge     String?
 
   /// JSON array of field definitions for the public registration form (see lib/event-registration-form.ts).
-  /// Each field: { id, label, type, required?, options?, description?, sortOrder? }
-  /// Types: short_text, long_text, email, tel, number, date, dropdown, radio, checkbox, multi_select
+  /// Each field: { id, label, type, required?, options?, description?, placeholder?, accept?, sortOrder? }
+  /// Types: short_text, long_text, email, tel, number, date, dropdown, radio, checkbox, multi_select, file, section, paragraph
   registrationFormFields Json?
 
   mediaId String?

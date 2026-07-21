@@ -394,7 +394,22 @@ export function EventsCmsClient() {
             page.
           </p>
         ) : null}
-        <form className="mt-8 grid gap-5 md:grid-cols-2" onSubmit={save}>
+        <form
+          className="mt-8 grid gap-5 md:grid-cols-2"
+          onSubmit={save}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter") return;
+            const target = e.target as HTMLElement;
+            // Allow Enter to create a new line in textareas (options, excerpt, help text, etc.).
+            if (target.tagName === "TEXTAREA" || target.closest("textarea")) return;
+            if (target.tagName === "BUTTON") return;
+            if (target.tagName === "INPUT" && (target as HTMLInputElement).type === "submit") return;
+            // Inside the registration builder, Enter on text inputs should not submit Create event.
+            if (target.closest("[data-registration-form-builder]")) {
+              e.preventDefault();
+            }
+          }}
+        >
           <div className="md:col-span-2">
             <CmsImageUpload
               label="Event image"

@@ -1,5 +1,6 @@
 import type { HomepageExploreSettings, Media } from "@prisma/client";
 import { HOMEPAGE_EXPLORE_DEFAULTS } from "@/lib/homepage-explore-defaults";
+import { normalizeHeadlineSpacing } from "@/lib/headline-spacing";
 
 export const HOMEPAGE_EXPLORE_ID = "homepage_explore" as const;
 
@@ -46,8 +47,8 @@ export function mapHomepageExploreRow(row: HomepageExploreRow): HomepageExploreP
   const d = HOMEPAGE_EXPLORE_DEFAULTS;
   return {
     missionEyebrow: row.missionEyebrow,
-    headlineLine1: row.headlineLine1,
-    headlineLine2: row.headlineLine2,
+    headlineLine1: normalizeHeadlineSpacing(row.headlineLine1),
+    headlineLine2: normalizeHeadlineSpacing(row.headlineLine2),
     aboutEyebrow: row.aboutEyebrow,
     aboutBody: row.aboutBody,
     imageBadge: row.imageBadge,
@@ -66,8 +67,8 @@ export function homepageExploreDefaults(): HomepageExplorePublic {
   const d = HOMEPAGE_EXPLORE_DEFAULTS;
   return {
     missionEyebrow: d.missionEyebrow,
-    headlineLine1: d.headlineLine1,
-    headlineLine2: d.headlineLine2,
+    headlineLine1: normalizeHeadlineSpacing(d.headlineLine1),
+    headlineLine2: normalizeHeadlineSpacing(d.headlineLine2),
     aboutEyebrow: d.aboutEyebrow,
     aboutBody: d.aboutBody,
     imageBadge: d.imageBadge,
