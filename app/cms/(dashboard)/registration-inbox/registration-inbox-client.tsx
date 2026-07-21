@@ -5,19 +5,19 @@ import { useCallback, useEffect, useState } from "react";
 import { cmsCredentials, CMS_UNAUTHORIZED_MESSAGE } from "@/lib/cms-fetch";
 import { CmsButton, CmsCard } from "@/components/cms/cms-ui";
 import { CmsSectionTitle } from "@/components/cms/cms-section-title";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, FileJson, FileSpreadsheet, FileText } from "lucide-react";
 import { handleCmsResponse } from "@/lib/cms-toast";
 import { refreshCmsNotifications } from "@/components/cms/cms-nav-badges";
+import {
+  downloadTextFile,
+  inboxExportFilename,
+  registrationInboxToCsv,
+  registrationInboxToExcelXml,
+  registrationInboxToJson,
+  type InboxExportRow,
+} from "@/lib/registration-inbox-export";
 
-type Row = {
-  id: string;
-  eventId: string;
-  eventTitle: string;
-  createdAt: string;
-  read: boolean;
-  summaryLine: string | null;
-  lines: { label: string; value: string; href?: string }[];
-};
+type Row = InboxExportRow;
 
 export function RegistrationInboxClient() {
   const [rows, setRows] = useState<Row[]>([]);
@@ -58,6 +58,30 @@ export function RegistrationInboxClient() {
     }
   }
 
+  function exportCsv() {
+    downloadTextFile(
+      inboxExportFilename("csv", unreadOnly),
+      registrationInboxToCsv(rows),
+      "text/csv;charset=utf-8"
+    );
+  }
+
+  function exportJson() {
+    downloadTextFile(
+      inboxExportFilename("json", unreadOnly),
+      registrationInboxToJson(rows),
+      "application/json;charset=utf-8"
+    );
+  }
+
+  function exportExcel() {
+    downloadTextFile(
+      inboxExportFilename("xls", unreadOnly),
+      registrationInboxToExcelXml(rows),
+      "application/vnd.ms-excel;charset=utf-8"
+    );
+  }
+
   if (loading) return <p className="text-sm text-slate-500">Loading…</p>;
 
   return (
@@ -75,10 +99,33 @@ export function RegistrationInboxClient() {
       </div>
       {err ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">{err}</p> : null}
 
-      <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-        <input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.checked)} />
-        Show unread only
-      </label>
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+          <input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.checked)} />
+          Show unread only
+        </label>
+
+        {rows.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-1 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <Download className="h-3.5 w-3.5" aria-hidden />
+              Download
+            </span>
+            <CmsButton type="button" variant="ghost" onClick={exportExcel}>
+              <FileSpreadsheet className="mr-1.5 h-4 w-4" aria-hidden />
+              Excel
+            </CmsButton>
+            <CmsButton type="button" variant="ghost" onClick={exportCsv}>
+              <FileText className="mr-1.5 h-4 w-4" aria-hidden />
+              CSV
+            </CmsButton>
+            <CmsButton type="button" variant="ghost" onClick={exportJson}>
+              <FileJson className="mr-1.5 h-4 w-4" aria-hidden />
+              JSON
+            </CmsButton>
+          </div>
+        ) : null}
+      </div>
 
       <div>
         <CmsSectionTitle>Registrations ({rows.length})</CmsSectionTitle>
