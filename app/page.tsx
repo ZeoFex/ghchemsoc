@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/layout/header";
 import { JsonLd } from "@/components/seo/json-ld";
-import { breadcrumbJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, buildMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Ghana Chemical Society (ghchemsoc) | Official GCS Website",
+  absoluteTitle: true,
+  description:
+    "Official website of the Ghana Chemical Society (ghchemsoc, GCS). Discover events, publications, membership, and chemistry resources in Ghana.",
+  path: "/",
+});
 import { HeroWithCms } from "@/components/home/hero-with-cms";
 import { ExploreSection } from "@/components/home/explore-section";
 import { HomeEventsRow } from "@/components/home/home-events-row";

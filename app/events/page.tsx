@@ -54,10 +54,6 @@ export default async function EventsPage() {
               <h1 className="gcs-page-title">
                 Where Ghana&rsquo;s chemistry community meets
               </h1>
-              <p className="gcs-lead mt-5 max-w-xl">
-                Flagship symposia, technical workshops, and networking for educators, researchers, students, and
-                partners—curated by the Ghana Chemical Society.
-              </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link

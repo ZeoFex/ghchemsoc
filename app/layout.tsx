@@ -11,6 +11,7 @@ import {
   DEFAULT_DESCRIPTION,
   DEFAULT_KEYWORDS,
   DEFAULT_OG_IMAGE_PATH,
+  SITE_BRAND_SLUG,
   SITE_LOCALE,
   SITE_NAME,
   absoluteImageUrl,
@@ -25,10 +26,12 @@ const outfit = Outfit({
 /** ISR fallback: public pages refresh periodically if on-demand revalidation is missed. */
 export const revalidate = 60;
 
+const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseUrl()),
   title: {
-    default: SITE_NAME,
+    default: `${SITE_NAME} (${SITE_BRAND_SLUG})`,
     template: `${SITE_NAME} | %s`,
   },
   description: DEFAULT_DESCRIPTION,
@@ -45,7 +48,7 @@ export const metadata: Metadata = {
     locale: SITE_LOCALE,
     url: "/",
     siteName: SITE_NAME,
-    title: SITE_NAME,
+    title: `${SITE_NAME} (${SITE_BRAND_SLUG})`,
     description: DEFAULT_DESCRIPTION,
     images: [
       {
@@ -58,7 +61,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: SITE_NAME,
+    title: `${SITE_NAME} (${SITE_BRAND_SLUG})`,
     description: DEFAULT_DESCRIPTION,
     images: [absoluteImageUrl(DEFAULT_OG_IMAGE_PATH)],
   },
@@ -71,6 +74,9 @@ export const metadata: Metadata = {
     apple: "/logo/ghana-chemical-society-logo.png",
   },
   manifest: "/manifest.webmanifest",
+  ...(googleSiteVerification
+    ? { verification: { google: googleSiteVerification } }
+    : {}),
 };
 
 export const viewport: Viewport = {

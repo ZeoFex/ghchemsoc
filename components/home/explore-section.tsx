@@ -4,32 +4,12 @@ import { ArrowRight, ArrowUpRight, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExploreHeadline } from "@/components/home/explore-headline";
 import { getHomepageExploreForPublic } from "@/lib/cms-queries";
-
-function normalizeHeadlineText(text: string) {
-  let t = text;
-  t = t.replace(/\s+/g, " ").trim();
-  // Common missing-space issues from CMS inputs.
-  // Make this robust to variants like "Advancingchemistryfor", "Advancing chemistryfor", etc.
-  t = t.replace(/advancing\s*chemistry\s*for/gi, "Advancing chemistry for");
-  t = t.replace(/advancingchemistryfor/gi, "Advancing chemistry for");
-  t = t.replace(/chemistry\s*for/gi, "chemistry for");
-  t = t.replace(/chemistryfor/gi, "chemistry for");
-  // Ghana'suniversities -> Ghana's universities
-  t = t.replace(/('s)([A-Za-z])/g, "$1 $2");
-  // Ensure spaces after commas.
-  t = t.replace(/,(\S)/g, ", $1");
-  // Ensure spaces around "and" when glued.
-  t = t.replace(/,and/gi, ", and");
-  t = t.replace(/\band([A-Za-z])/g, "and $1");
-  // Ensure Oxford comma spacing for the common "universities,laboratories,andindustries" pattern.
-  t = t.replace(/universities,\s*laboratories,\s*and\s*industries/gi, "universities, laboratories, and industries");
-  return t.replace(/\s+/g, " ").trim();
-}
+import { normalizeHeadlineSpacing } from "@/lib/headline-spacing";
 
 export async function ExploreSection() {
   const s = await getHomepageExploreForPublic();
-  const headlineLine1 = normalizeHeadlineText(s.headlineLine1);
-  const headlineLine2 = normalizeHeadlineText(s.headlineLine2);
+  const headlineLine1 = normalizeHeadlineSpacing(s.headlineLine1);
+  const headlineLine2 = normalizeHeadlineSpacing(s.headlineLine2);
 
   return (
     <section

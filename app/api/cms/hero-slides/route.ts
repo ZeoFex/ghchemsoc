@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       data: {
         url: d.imageUrl,
         publicId: d.imagePublicId ?? null,
-        alt: d.imageAlt,
+        alt: d.imageAlt?.trim() || null,
       },
     });
     return tx.heroSlide.create({

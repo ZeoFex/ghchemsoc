@@ -24,7 +24,7 @@ type RegRow = {
   createdAt: string;
   read: boolean;
   summaryLine: string | null;
-  lines: { label: string; value: string }[];
+  lines: { label: string; value: string; href?: string }[];
   rawResponses: Record<string, RegistrationAnswerValue>;
 };
 
@@ -142,8 +142,8 @@ export function EventRegistrationsClient({ eventId }: { eventId: string }) {
       <CmsCard className="p-8">
         <CmsSectionTitle>Registration form builder</CmsSectionTitle>
         <p className="mt-2 text-sm text-gcs-muted-text">
-          Add fields, reorder them, and choose types (short answer, paragraph, email, dropdown, radio, checkboxes, and more).
-          Use stable field IDs — they are stored with each answer.
+          Add fields, reorder them, and choose types (short answer, email, dropdown, file upload, section headings, and more).
+          Use stable field IDs — they are stored with each answer. File fields are ideal for abstracts and supporting documents.
         </p>
         <div className="mt-6">
           <EventRegistrationFormBuilder fields={fields} onChange={setFields} />
@@ -207,7 +207,21 @@ export function EventRegistrationsClient({ eventId }: { eventId: string }) {
                       {r.lines.map((line) => (
                         <div key={line.label} className="grid gap-1 sm:grid-cols-[minmax(0,200px)_1fr] sm:gap-4">
                           <dt className="font-semibold text-gcs-muted-text">{line.label}</dt>
-                          <dd className="whitespace-pre-wrap text-gcs-foreground">{line.value}</dd>
+                          <dd className="whitespace-pre-wrap text-gcs-foreground">
+                            {line.href ? (
+                              <a
+                                href={line.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-gcs-primary hover:underline"
+                                download={line.value}
+                              >
+                                Download {line.value}
+                              </a>
+                            ) : (
+                              line.value
+                            )}
+                          </dd>
                         </div>
                       ))}
                     </dl>

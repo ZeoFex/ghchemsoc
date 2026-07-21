@@ -10,14 +10,20 @@ import { AboutHeroHeadline } from "@/components/about/about-hero-headline";
 import { AboutSections } from "@/components/about/about-sections";
 import { getHomepageExploreForPublic, getPublishedAboutSections, getPublishedExecutives } from "@/lib/cms-queries";
 import type { HomepageExplorePublic } from "@/lib/homepage-explore";
+import { normalizeHeadlineSpacing } from "@/lib/headline-spacing";
 import { ArrowDown, ArrowUpRight, BookOpen, MapPin, Users } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "About | Ghana Chemical Society",
-  description: "Mission, programmes, and values of the Ghana Chemical Society.",
-};
+export const metadata: Metadata = buildMetadata({
+  title: "About",
+  description:
+    "Learn about the Ghana Chemical Society (ghchemsoc, GCS)—our mission, programmes, leadership, and values advancing chemistry in Ghana.",
+  path: "/about",
+});
 
 function MissionIntro({ mission }: { mission: HomepageExplorePublic }) {
+  const headlineLine1 = normalizeHeadlineSpacing(mission.headlineLine1);
+  const headlineLine2 = normalizeHeadlineSpacing(mission.headlineLine2);
+
   return (
     <section
       className="relative border-b border-gcs-border/60 bg-gradient-to-b from-blue-50/50 via-white to-white"
@@ -34,8 +40,13 @@ function MissionIntro({ mission }: { mission: HomepageExplorePublic }) {
               {mission.missionEyebrow}
             </p>
             <h2 className="gcs-section-title mt-4 max-w-3xl">
-              {mission.headlineLine1}{" "}
-              <span className="text-gcs-primary">{mission.headlineLine2}</span>
+              {headlineLine1}
+              {headlineLine2 ? (
+                <>
+                  {" "}
+                  <span className="text-gcs-primary">{headlineLine2}</span>
+                </>
+              ) : null}
             </h2>
             {mission.aboutBody ? (
               <p className="gcs-lead mt-6 max-w-3xl text-gcs-muted-text">{mission.aboutBody}</p>

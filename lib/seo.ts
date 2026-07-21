@@ -4,16 +4,18 @@ import { SITE_FOOTER_DEFAULTS } from "@/lib/site-footer-defaults";
 
 export const SITE_NAME = "Ghana Chemical Society";
 export const SITE_SHORT_NAME = "GCS";
+export const SITE_BRAND_SLUG = "ghchemsoc";
 export const SITE_LOCALE = "en_GH";
 
 /** Canonical production domain when NEXT_PUBLIC_APP_URL is unset. */
-export const PRODUCTION_FALLBACK_URL = "https://ghanachemicalsociety.org";
+export const PRODUCTION_FALLBACK_URL = "https://www.ghchemsoc.org";
 
 export const DEFAULT_DESCRIPTION =
-  SITE_FOOTER_DEFAULTS.description;
+  "The Ghana Chemical Society (ghchemsoc, GCS) connects professionals across research, industry, and education—advancing chemistry in Ghana through networking, resources, conferences, and shared expertise.";
 
 export const DEFAULT_KEYWORDS = [
   "Ghana Chemical Society",
+  "ghchemsoc",
   "GCS",
   "chemistry Ghana",
   "chemical society",
@@ -140,7 +142,7 @@ export function organizationJsonLd(options?: {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE_NAME,
-    alternateName: SITE_SHORT_NAME,
+    alternateName: [SITE_SHORT_NAME, SITE_BRAND_SLUG],
     url: absoluteUrl("/"),
     logo: absoluteImageUrl(DEFAULT_OG_IMAGE_PATH),
     description: DEFAULT_DESCRIPTION,
@@ -165,7 +167,7 @@ export function websiteJsonLd() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_NAME,
-    alternateName: SITE_SHORT_NAME,
+    alternateName: [SITE_SHORT_NAME, SITE_BRAND_SLUG],
     url: absoluteUrl("/"),
     description: DEFAULT_DESCRIPTION,
     inLanguage: "en-GH",
